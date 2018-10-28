@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 using StateMachineNet.Utilities;
 using System;
 
@@ -17,7 +17,7 @@ namespace TicTacToeExample {
 			AddState(StateId.StartScreen, new StartScreen()).
 				GoTo(StateId.GameScreen).
 					WhenTrigger(ParamId.StartGame).
-			AddState(StateId.GameScreen, Builder. //  Notice this is a substate machine
+			AddState(StateId.GameScreen, Builder. // Notice this is a substate machine
 				AddState(StateId.GameScreen_Player1Turn, new PlayerTurnScreen(1)).
 					GoTo(StateId.GameScreen_Player2Turn).
 						WhenTrigger(ParamId.EndTurn).
@@ -33,8 +33,8 @@ namespace TicTacToeExample {
 				FromAny. // From and FromAny prevent us from having to rewrite code
 					GoTo(StateId.StartScreen).
 						WhenTrigger(ParamId.GoToStartScreen).
-				Build.As<GameScreen>() // We have to specify the state machine type
-			) // Building and casting (As) are optional for the root state machine 
+				Build.As<GameScreen>() // We have to specify the substate machine type
+			) // Building and casting (As) are optional for the root state machine
 		);
 
 		// Used in main to draw the active state

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using StateMachineNet.Utilities;
@@ -63,6 +63,11 @@ namespace StateMachineNet {
 		private Dictionary<TParamId, int> ints = new Dictionary<TParamId, int>();
 		private Dictionary<TParamId, string> strings = new Dictionary<TParamId, string>();
 		private HashSet<TParamId> triggers = new HashSet<TParamId>();
+		private Dictionary<TStateId, List<Action>> observableSubscriptions = new Dictionary<TStateId, List<Action>>();
+		private Dictionary<TStateId, List<Action>> observableUnsubscriptions = new Dictionary<TStateId, List<Action>>();
+		private bool canEvaluateTransitions => IsRunning && !transitionLock.IsLocked && activeStates.Count > 0;
+		private List<Transition<TStateId, TParamId>> activeTransitions => (transitions.ContainsKey(ActiveStateId) ? 
+			globalTransitions.Concat(transitions[ActiveStateId]) : globalTransitions).ToList();
 
 		#region Creation methods
 
@@ -159,10 +164,13 @@ namespace StateMachineNet {
 			}
 			transitionLock.AddLock();
 			if (activeStates.Count > 0) {
-				states[activeStates.Pop()].Exit(this);
+				TStateId popped = activeStates.Pop();
+				UnsubscribeFromObservables(popped);
+				states[popped].Exit(this);
 			}
 			activeStates.Push(state);
-			states[activeStates.Peek()].Enter(this);
+			SubscribeToObservables(state);
+			states[state].Enter(this);
 			transitionLock.RemoveLock();
 			EvaluateTransitions();
 		}
@@ -181,6 +189,7 @@ namespace StateMachineNet {
 				states[activeStates.Peek()].Pause(this);
 			}
 			activeStates.Push(state);
+			SubscribeToObservables(state);
 			states[activeStates.Peek()].Enter(this);
 			transitionLock.RemoveLock();
 			EvaluateTransitions();
@@ -193,7 +202,9 @@ namespace StateMachineNet {
 			Log($"Popping state {ActiveStateId}.");
 			transitionLock.AddLock();
 			if (activeStates.Count > 0) {
-				states[activeStates.Pop()].Exit(this);
+				TStateId popped = activeStates.Pop();
+				UnsubscribeFromObservables(popped);
+				states[popped].Exit(this);
 			}
 			if (activeStates.Count > 0) {
 				states[activeStates.Peek()].Resume(this);
@@ -218,7 +229,7 @@ namespace StateMachineNet {
 				return;
 			}
 			bools[param] = value;
-			EvaluateTransitions();
+			EvaluateTransitions(param);
 		}
 
 		/// <summary>
@@ -233,7 +244,7 @@ namespace StateMachineNet {
 				return;
 			}
 			floats[param] = value;
-			EvaluateTransitions();
+			EvaluateTransitions(param);
 		}
 
 		/// <summary>
@@ -248,7 +259,7 @@ namespace StateMachineNet {
 				return;
 			}
 			ints[param] = value;
-			EvaluateTransitions();
+			EvaluateTransitions(param);
 		}
 
 		/// <summary>
@@ -263,7 +274,7 @@ namespace StateMachineNet {
 				return;
 			}
 			strings[param] = value;
-			EvaluateTransitions();
+			EvaluateTransitions(param);
 		}
 
 		/// <summary>
@@ -277,7 +288,7 @@ namespace StateMachineNet {
 				return;
 			}
 			triggers.Add(param);
-			EvaluateTransitions();
+			EvaluateTransitions(param);
 		}
 
 		private void ResetTriggers() {
@@ -345,41 +356,58 @@ namespace StateMachineNet {
 		#endregion
 
 		#region Utility/Helpers
+		
 
 		/// <summary>
 		/// Casts a state machine from one type to another as long as they state the same base state machine class
 		/// </summary>
 		/// <typeparam name="TStateMachine">Type to cast to</typeparam>
+		/// <param name="args">Constructor arguments</param>
 		/// <returns>The casted state machine</returns>
-		public TStateMachine As<TStateMachine>() where TStateMachine : StateMachine<TStateId, TParamId>, new() =>
-			new TStateMachine() {
-				LogFlow = LogFlow,
-				IsRunning = IsRunning,
-				initialStateId = initialStateId,
-				hasSetInitialStateId = hasSetInitialStateId,
-				activeStates = activeStates,
-				states = states,
-				globalTransitions = globalTransitions,
-				transitions = transitions,
-				bools = bools,
-				floats = floats,
-				ints = ints,
-				strings = strings,
-				triggers = triggers
-			};
+		public TStateMachine As<TStateMachine>(params object[] args) where TStateMachine : StateMachine<TStateId, TParamId>, new() {
+			TStateMachine copy = (TStateMachine) Activator.CreateInstance(typeof(TStateMachine), args);
+			copy.LogFlow = LogFlow;
+			copy.IsRunning = IsRunning;
+			copy.initialStateId = initialStateId;
+			copy.hasSetInitialStateId = hasSetInitialStateId;
+			copy.activeStates = activeStates;
+			copy.states = states;
+			copy.globalTransitions = globalTransitions;
+			copy.transitions = transitions;
+			copy.bools = bools;
+			copy.floats = floats;
+			copy.ints = ints;
+			copy.strings = strings;
+			copy.triggers = triggers;
+			return copy;
+		}
+
+		private void EvaluateTransitions(TParamId param) {
+			if (ActiveState is StateMachine<TStateId, TParamId> substate) {
+				substate.EvaluateTransitions();
+				return;
+			}
+			if (!canEvaluateTransitions) {
+				return;
+			}
+			Log($"Evaluating transitions for {param}");
+			if (activeTransitions.Any(x => x.HasParam(param))) {
+				Log("The active state does not take this param into consideration. No need to evaluate transitions.");
+				return;
+			}
+			EvaluateTransitions();
+		}
 
 		private void EvaluateTransitions() {
 			if (ActiveState is StateMachine<TStateId, TParamId> substate) {
 				substate.EvaluateTransitions();
 				return;
 			}
-			if (!IsRunning || transitionLock.IsLocked || activeStates.Count == 0) {
+			if (!canEvaluateTransitions) {
 				return;
 			}
 			Log($"Evaluating transitions.");
-			foreach (Transition<TStateId, TParamId> transition in transitions.ContainsKey(ActiveStateId) ?
-				globalTransitions.Concat(transitions[ActiveStateId]) : globalTransitions
-			) {
+			foreach (Transition<TStateId, TParamId> transition in activeTransitions) {
 				bool success = transition.EvaluateTransition(this);
 				if (success) {
 					Log("Valid transition found.");
@@ -389,6 +417,25 @@ namespace StateMachineNet {
 				}
 			}
 			Log("No valid transition found.");
+		}
+
+		private void SubscribeToObservables(TStateId state) {
+			if (!observableSubscriptions.ContainsKey(state) || !transitions.ContainsKey(state)) {
+				return;
+			}
+			observableSubscriptions[state].ForEach(x => x());
+			transitions[state].ForEach(x => {
+				x.RefreshObservables();
+				x.SubscribeToObservables();
+			});
+		}
+
+		private void UnsubscribeFromObservables(TStateId state) {
+			if (!observableUnsubscriptions.ContainsKey(state) || !transitions.ContainsKey(state)) {
+				return;
+			}
+			observableUnsubscriptions[state].ForEach(x => x());
+			transitions[state].ForEach(x => x.UnsubscribeFromObservables());
 		}
 
 		/// <summary>
@@ -458,6 +505,20 @@ namespace StateMachineNet {
 
 		internal void AddGlobalTransition(Transition<TStateId, TParamId> transition) =>
 			globalTransitions.Add(transition);
+
+		internal void AddObservable<T>(TStateId[] states, Observable<T> observable) {
+			for (int i = 0; i < states.Length; i++) {
+				if (!observableSubscriptions.ContainsKey(states[i])) {
+					observableSubscriptions.Add(states[i], new List<Action>());
+				}
+				observableSubscriptions[states[i]].Add(() => observable.ValueChanged += OnValueChanged);
+				observableUnsubscriptions[states[i]].Add(() => observable.ValueChanged -= OnValueChanged);
+			}
+			void OnValueChanged(Observable<T> o, T p, T n) {
+				Log("An observable value has changed from {p} to {n}.");
+				EvaluateTransitions();
+			}
+		}
 
 		#endregion
 	}

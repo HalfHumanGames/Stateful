@@ -1,4 +1,5 @@
 using System;
+using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
@@ -155,6 +156,17 @@ namespace StateMachineNet {
 
 		public IAddConditionAddTransitionAddStateBuildAddOr<TStateId, TParamId> WhenTrigger(TParamId param) {
 			mostRecentlyAddedTransition.AddTriggerCheck(param);
+			return this;
+		}
+
+		public IAddConditionAddTransitionAddStateBuildAddOr<TStateId, TParamId> When<T>(Observable<T> observable, Func<Observable<T>, bool> check) {
+			Build.AddObservable(statesToAddTransitionsTo, observable);
+			mostRecentlyAddedTransition.AddObservableCheck(observable, check);
+			return this;
+		}
+
+		public IAddTransitionAddStateBuild<TStateId, TParamId> On<T>(T id, Action<StateMachine<TStateId, TParamId>> action) {
+			int hashCode = id.GetHashCode();
 			return this;
 		}
 

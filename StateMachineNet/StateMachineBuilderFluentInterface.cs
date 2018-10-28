@@ -1,4 +1,5 @@
 using System;
+using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
@@ -87,7 +88,9 @@ namespace StateMachineNet {
 	}
 
 	public interface IAddTransitionAddStateBuild<TStateId, TParamId> : IAddTransition<TStateId, TParamId>, IAddState<TStateId, TParamId> {
-		
+
+		IAddTransitionAddStateBuild On<T>(T id, Action<StateMachine<TStateId, TParamId>> action);
+
 		/// <summary>
 		/// Specifies that the next transition can occur from any of the specified states
 		/// </summary>
@@ -154,5 +157,13 @@ namespace StateMachineNet {
 		/// <param name="param">Parameter id</param>
 		/// <returns>Returns a fluent interface</returns>
 		IAddConditionAddTransitionAddStateBuildAddOr<TStateId, TParamId> WhenTrigger(TParamId param);
+
+		/// <summary>
+		/// Adds an observable condition to the most recently added transition
+		/// </summary>
+		/// <typeparam name="T">Observable value type</typeparam>
+		/// <param name="param">Observable</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddConditionAddTransitionAddStateBuildAddOr<TStateId, TParamId> When<T>(Observable<T> param, Func<Observable<T>, bool> check);
 	}
 }
