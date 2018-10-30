@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 
 namespace ArcadeExample {
 
@@ -32,7 +32,7 @@ namespace ArcadeExample {
 		}
 
 		// When the game starts, reset the number of coins inserted to 0
-		protected override void OnExit(StateMachine<StateId, ParamId> stateMachine) =>
+		protected override void OnExit(StateMachine<StateId, ParamId, string> stateMachine) =>
 			stateMachine.SetInt(ParamId.CoinsInserted, 0);
 	}
 }

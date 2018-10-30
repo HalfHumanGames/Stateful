@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelloWorldExample", "..\Exa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacToeExample", "..\Examples\TicTacToeExample\TicTacToeExample.csproj", "{0CB50DCA-3F41-4079-98A1-53C33E2F1340}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIExample", "..\Examples\AIExample\AIExample.csproj", "{B9093758-9BB4-478C-9510-C1D610957996}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AIExample", "..\Examples\AIExample\AIExample.csproj", "{B9093758-9BB4-478C-9510-C1D610957996}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncExample", "..\Examples\AsyncExample\AsyncExample.csproj", "{FFC3871A-E969-4A61-B514-764FCA9A3DDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{B9093758-9BB4-478C-9510-C1D610957996}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9093758-9BB4-478C-9510-C1D610957996}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B9093758-9BB4-478C-9510-C1D610957996}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFC3871A-E969-4A61-B514-764FCA9A3DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFC3871A-E969-4A61-B514-764FCA9A3DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFC3871A-E969-4A61-B514-764FCA9A3DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFC3871A-E969-4A61-B514-764FCA9A3DDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{94E170DE-24D8-4EBE-980A-68CE780D7290} = {3AD1BC6D-5FA1-4083-81C9-D71EAE6F7868}
 		{0CB50DCA-3F41-4079-98A1-53C33E2F1340} = {3AD1BC6D-5FA1-4083-81C9-D71EAE6F7868}
 		{B9093758-9BB4-478C-9510-C1D610957996} = {3AD1BC6D-5FA1-4083-81C9-D71EAE6F7868}
+		{FFC3871A-E969-4A61-B514-764FCA9A3DDC} = {3AD1BC6D-5FA1-4083-81C9-D71EAE6F7868}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0FCB8AE4-1F78-45B8-A84E-EB57990136BF}

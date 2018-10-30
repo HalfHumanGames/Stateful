@@ -18,6 +18,7 @@ namespace StateMachineNet.Utilities {
 			}
 		}
 
+		public Observable() { }
 		public Observable(T value) => this.value = value;
 	}
 }

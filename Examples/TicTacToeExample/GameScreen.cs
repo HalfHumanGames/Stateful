@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 using StateMachineNet.Utilities;
 
 namespace TicTacToeExample {
@@ -11,7 +11,7 @@ namespace TicTacToeExample {
 		public string Title => "Game on!";
 		public char[,] Board;
 
-		protected override void OnEnter(StateMachine<StateId, ParamId> stateMachine) {
+		protected override void OnEnter(StateMachine<StateId, ParamId, string> stateMachine) {
 
 			// Reset the game state prior to calling base.Enter to prevent falling through
 			// PlayerTurn and going straight to GameOverScreen instead. Alternatively, 

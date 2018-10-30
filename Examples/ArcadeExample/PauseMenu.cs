@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 
 namespace ArcadeExample {
 
@@ -25,7 +25,7 @@ namespace ArcadeExample {
 
 		// Make sure to unpause on exit so the player does not re-enter the game
 		// screen with the pause menu showing!
-		protected override void OnExit(StateMachine<StateId, ParamId> stateMachine) =>
+		protected override void OnExit(StateMachine<StateId, ParamId, string> stateMachine) =>
 			stateMachine.SetBool(ParamId.IsPaused, false);
 	}
 }

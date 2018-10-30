@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 using System;
 
 namespace ArcadeExample {
@@ -43,7 +43,7 @@ namespace ArcadeExample {
 		// We do this so that we have access to the state machine when getting the
 		// screen's title, description, or options in case we want to use parameters
 		// in them. For example: "{LivesRemaining}/3 Lives"
-		protected override void OnEnter(StateMachine<StateId, ParamId> stateMachine) =>
+		protected override void OnEnter(StateMachine<StateId, ParamId, string> stateMachine) =>
 			arcade = stateMachine as Arcade;
 	}
 }

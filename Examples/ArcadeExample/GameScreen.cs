@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 
 namespace ArcadeExample {
 
@@ -45,7 +45,7 @@ namespace ArcadeExample {
 			}
 		}
 
-		protected override void OnEnter(StateMachine<StateId, ParamId> stateMachine) {
+		protected override void OnEnter(StateMachine<StateId, ParamId, string> stateMachine) {
 
 			// On Enter reset the state of the game
 			base.OnEnter(stateMachine);

@@ -5,14 +5,15 @@ using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
-	public class StateMachine : StateMachine<string, string> { }
-	public class StateMachine<TStateId> : StateMachine<TStateId, string> { }
-	public class StateMachine<TStateId, TParamId> : State<TStateId, TParamId> {
+	public class StateMachine : StateMachine<string, string, string> { }
+	public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
+	public class StateMachine<TStateId, TParamId> : StateMachine<TStateId, TParamId, string> { }
+	public partial class StateMachine<TStateId, TParamId, TMessageId> : State<TStateId, TParamId, TMessageId> {
 
 		/// <summary>
 		/// Creates a new builder for this state machine
 		/// </summary>
-		public IStateMachineBuilder<TStateId, TParamId> Builder => StateMachineBuilder.Create<TStateId, TParamId>();
+		public IStateMachineBuilder<TStateId, TParamId, TMessageId> Builder => StateMachineBuilder.Create<TStateId, TParamId, TMessageId>();
 
 		/// <summary>
 		/// Checks if this state machine is a substate machine
@@ -22,7 +23,7 @@ namespace StateMachineNet {
 		/// <summary>
 		/// Gets the parent state if this is a substate machine
 		/// </summary>
-		public StateMachine<TStateId, TParamId> ParentState { get; private set; }
+		public StateMachine<TStateId, TParamId, TMessageId> ParentState { get; private set; }
 
 		/// <summary>
 		/// Enables or disables logging the state machine flow
@@ -39,25 +40,33 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <typeparam name="T">The state type</typeparam>
 		/// <returns>Returns the active state as the specified type</returns>
-		public T GetActiveState<T>() where T : State<TStateId, TParamId> => (T) ActiveState;
+		public T GetActiveState<T>() where T : State<TStateId, TParamId, TMessageId> => (T) ActiveState;
 
 		/// <summary>
 		/// Gets the active state
 		/// </summary>
-		public State<TStateId, TParamId> ActiveState => activeStates.Count > 0 ? states[ActiveStateId] : null;
+		public State<TStateId, TParamId, TMessageId> ActiveState => activeStates.Count > 0 ? states[ActiveStateId] : null;
 
 		/// <summary>
 		/// Gets the state id of the  specified state
 		/// </summary>
 		public TStateId ActiveStateId => activeStates.Peek();
 
+		// State management
 		private TStateId initialStateId;
 		private bool hasSetInitialStateId;
-		private Lock transitionLock = new Lock();
 		private Stack<TStateId> activeStates = new Stack<TStateId>();
-		private Dictionary<TStateId, State<TStateId, TParamId>> states = new Dictionary<TStateId, State<TStateId, TParamId>>();
-		private Dictionary<TStateId, List<Transition<TStateId, TParamId>>> transitions = new Dictionary<TStateId, List<Transition<TStateId, TParamId>>>();
-		private List<Transition<TStateId, TParamId>> globalTransitions = new List<Transition<TStateId, TParamId>>();
+		private Dictionary<TStateId, State<TStateId, TParamId, TMessageId>> states = new Dictionary<TStateId, State<TStateId, TParamId, TMessageId>>();
+		
+		// Transition management
+		private Lock transitionLock = new Lock();
+		private Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>> transitions = new Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>>();
+		private List<Transition<TStateId, TParamId, TMessageId>> globalTransitions = new List<Transition<TStateId, TParamId, TMessageId>>();
+		private bool canEvaluateTransitions => IsRunning && !transitionLock.IsLocked && activeStates.Count > 0;
+		private List<Transition<TStateId, TParamId, TMessageId>> activeTransitions => transitions.ContainsKey(ActiveStateId) ?
+			globalTransitions.Concat(transitions[ActiveStateId]).ToList() : globalTransitions;
+
+		// Parameter management
 		private Dictionary<TParamId, bool> bools = new Dictionary<TParamId, bool>();
 		private Dictionary<TParamId, float> floats = new Dictionary<TParamId, float>();
 		private Dictionary<TParamId, int> ints = new Dictionary<TParamId, int>();
@@ -65,14 +74,12 @@ namespace StateMachineNet {
 		private HashSet<TParamId> triggers = new HashSet<TParamId>();
 		private Dictionary<TStateId, List<Action>> observableSubscriptions = new Dictionary<TStateId, List<Action>>();
 		private Dictionary<TStateId, List<Action>> observableUnsubscriptions = new Dictionary<TStateId, List<Action>>();
-		private bool canEvaluateTransitions => IsRunning && !transitionLock.IsLocked && activeStates.Count > 0;
-		private List<Transition<TStateId, TParamId>> activeTransitions => (transitions.ContainsKey(ActiveStateId) ? 
-			globalTransitions.Concat(transitions[ActiveStateId]) : globalTransitions).ToList();
 
-		#region Creation methods
 
-		protected void Configure(IAddTransitionAddStateBuild<TStateId, TParamId> builder) => Configure(builder.Build);
-		protected void Configure(StateMachine<TStateId, TParamId> config) {
+		#region Configure methods
+
+		protected void Configure(IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> builder) => Configure(builder.Build);
+		protected void Configure(StateMachine<TStateId, TParamId, TMessageId> config) {
 			LogFlow = config.LogFlow;
 			IsRunning = config.IsRunning;
 			initialStateId = config.initialStateId;
@@ -92,9 +99,9 @@ namespace StateMachineNet {
 
 		#region State method overrides
 
-		internal override void Enter(StateMachine<TStateId, TParamId> stateMachine) {
+		internal override void Enter(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
 			if (IsSubstate) {
-				StateMachine<TStateId, TParamId> parent = this;
+				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
 					parent = parent.ParentState;
 					globalTransitions.AddRange(parent.globalTransitions);
@@ -104,9 +111,14 @@ namespace StateMachineNet {
 			Start();
 		}
 
-		internal override void Exit(StateMachine<TStateId, TParamId> stateMachine) {
+		internal override void Exit(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
 			Stop();
 			base.Exit(stateMachine);
+		}
+
+		internal override void SendMessage(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+			base.SendMessage(stateMachine, message, arg);
+			SendMessage(message, arg);
 		}
 
 		#endregion
@@ -151,7 +163,7 @@ namespace StateMachineNet {
 			if (!states.ContainsKey(state)) {
 				if (IsSubstate) {
 					Log($"State {state} not found, searching parents for state.");
-					StateMachine<TStateId, TParamId> parent = this;
+					StateMachine<TStateId, TParamId, TMessageId> parent = this;
 					do {
 						parent = parent.ParentState;
 						if (parent.states.ContainsKey(state)) {
@@ -356,7 +368,17 @@ namespace StateMachineNet {
 		#endregion
 
 		#region Utility/Helpers
-		
+
+		/// <summary>
+		/// Sends a message to the active state
+		/// </summary>
+		/// <param name="message">Message id</param>
+		/// <param name="arg">Message data</param>
+		public void SendMessage(TMessageId message, object arg = null) {
+			if (ActiveState != null) {
+				ActiveState.SendMessage(this, message, arg);
+			}
+		}
 
 		/// <summary>
 		/// Casts a state machine from one type to another as long as they state the same base state machine class
@@ -364,7 +386,7 @@ namespace StateMachineNet {
 		/// <typeparam name="TStateMachine">Type to cast to</typeparam>
 		/// <param name="args">Constructor arguments</param>
 		/// <returns>The casted state machine</returns>
-		public TStateMachine As<TStateMachine>(params object[] args) where TStateMachine : StateMachine<TStateId, TParamId>, new() {
+		public TStateMachine As<TStateMachine>(params object[] args) where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
 			TStateMachine copy = (TStateMachine) Activator.CreateInstance(typeof(TStateMachine), args);
 			copy.LogFlow = LogFlow;
 			copy.IsRunning = IsRunning;
@@ -383,7 +405,7 @@ namespace StateMachineNet {
 		}
 
 		private void EvaluateTransitions(TParamId param) {
-			if (ActiveState is StateMachine<TStateId, TParamId> substate) {
+			if (ActiveState is StateMachine<TStateId, TParamId, TMessageId> substate) {
 				substate.EvaluateTransitions();
 				return;
 			}
@@ -391,7 +413,7 @@ namespace StateMachineNet {
 				return;
 			}
 			Log($"Evaluating transitions for {param}");
-			if (activeTransitions.Any(x => x.HasParam(param))) {
+			if (!activeTransitions.Any(x => x.HasParam(param))) {
 				Log("The active state does not take this param into consideration. No need to evaluate transitions.");
 				return;
 			}
@@ -399,7 +421,7 @@ namespace StateMachineNet {
 		}
 
 		private void EvaluateTransitions() {
-			if (ActiveState is StateMachine<TStateId, TParamId> substate) {
+			if (ActiveState is StateMachine<TStateId, TParamId, TMessageId> substate) {
 				substate.EvaluateTransitions();
 				return;
 			}
@@ -407,7 +429,7 @@ namespace StateMachineNet {
 				return;
 			}
 			Log($"Evaluating transitions.");
-			foreach (Transition<TStateId, TParamId> transition in activeTransitions) {
+			foreach (Transition<TStateId, TParamId, TMessageId> transition in activeTransitions) {
 				bool success = transition.EvaluateTransition(this);
 				if (success) {
 					Log("Valid transition found.");
@@ -443,7 +465,7 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="state">State id of state to get</param>
 		/// <returns>State</returns>
-		public State<TStateId, TParamId> GetState(TStateId state) => GetState<State<TStateId, TParamId>>(state);
+		public State<TStateId, TParamId, TMessageId> GetState(TStateId state) => GetState<State<TStateId, TParamId, TMessageId>>(state);
 
 		/// <summary>
 		/// Gets a state by state id, but casted as the specified type
@@ -451,7 +473,7 @@ namespace StateMachineNet {
 		/// <typeparam name="T">Type to cast the state as</typeparam>
 		/// <param name="state">State id of state to get</param>
 		/// <returns>State casted as the specifed type</returns>
-		public T GetState<T>(TStateId state) where T : State<TStateId, TParamId> {
+		public T GetState<T>(TStateId state) where T : State<TStateId, TParamId, TMessageId> {
 			if (!states.ContainsKey(state)) {
 				throw new ArgumentException($"State {state} does not exist.");
 			}
@@ -469,7 +491,7 @@ namespace StateMachineNet {
 
 		#region Internal methods used by StateMachineBuilder
 
-		internal void AddState(TStateId stateId, State<TStateId, TParamId> state) {
+		internal void AddState(TStateId stateId, State<TStateId, TParamId, TMessageId> state) {
 			if (states.ContainsKey(stateId)) {
 				throw new ArgumentException($"A state with the name \"{stateId}\" already exists.");
 			}
@@ -478,7 +500,7 @@ namespace StateMachineNet {
 				hasSetInitialStateId = true;
 				initialStateId = stateId;
 			}
-			if (state is StateMachine<TStateId, TParamId> substate) {
+			if (state is StateMachine<TStateId, TParamId, TMessageId> substate) {
 				substate.ParentState = this;
 				transitions = transitions.Union(substate.transitions).ToDictionary(x => x.Key, x => x.Value);
 				bools = bools.Union(substate.bools).ToDictionary(x => x.Key, x => x.Value);
@@ -496,16 +518,18 @@ namespace StateMachineNet {
 			}
 		}
 
-		internal void AddTransition(TStateId stateId, Transition<TStateId, TParamId> transition) {
+		internal void AddTransition(TStateId stateId, Transition<TStateId, TParamId, TMessageId> transition) {
 			if (!transitions.ContainsKey(stateId)) {
-				transitions[stateId] = new List<Transition<TStateId, TParamId>>();
+				transitions[stateId] = new List<Transition<TStateId, TParamId, TMessageId>>();
 			}
 			transitions[stateId].Add(transition);
 		}
 
-		internal void AddGlobalTransition(Transition<TStateId, TParamId> transition) =>
+		internal void AddGlobalTransition(Transition<TStateId, TParamId, TMessageId> transition) =>
 			globalTransitions.Add(transition);
 
+
+		// CANNOT ACCESS STATE VIA DICT BEFORE IT GETS ADDED!!!!!
 		internal void AddObservable<T>(TStateId[] states, Observable<T> observable) {
 			for (int i = 0; i < states.Length; i++) {
 				if (!observableSubscriptions.ContainsKey(states[i])) {
