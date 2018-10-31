@@ -1,5 +1,8 @@
+using System;
+
 namespace StateMachineNet.Utilities {
 
+	[Serializable] 
 	public class Observable<T> {
 
 		public delegate void ValueChangedHandler(Observable<T> observable, T previousValue, T newValue);

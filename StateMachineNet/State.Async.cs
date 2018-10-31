@@ -5,39 +5,36 @@ using System.Threading.Tasks;
 namespace StateMachineNet {
 
 	public partial class State<TStateId, TParamId, TMessageId> {
-		
-		protected  Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onEnterAsync;
-		protected  Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onExitAsync;
-		protected  Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onPauseAsync;
-		protected  Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onResumeAsync;
-		protected  Dictionary<TMessageId, Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object, Task>> onMessagesAsync =
+
+		protected Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onEnterAsync;
+		protected Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onExitAsync;
+		protected Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onPauseAsync;
+		protected Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task> onResumeAsync;
+		protected Dictionary<TMessageId, Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object, Task>> onMessagesAsync =
 			new Dictionary<TMessageId, Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object, Task>>();
 
-		#region Flow control - used by state machine
+		#region transition action wrappers
 
-		internal virtual async Task EnterAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => 
-			await Task.WhenAll(onEnterAsync?.Invoke(stateMachine, this), OnEnterAsync(stateMachine));
+		internal virtual async Task EnterAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			await (onEnterAsync == null ? OnEnterAsync(stateMachine) : Task.WhenAll(onEnterAsync(stateMachine, this), OnEnterAsync(stateMachine)));
 
-		internal virtual async Task ExitAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => 
-			await Task.WhenAll(onExitAsync?.Invoke(stateMachine, this), OnExitAsync(stateMachine));
+		internal virtual async Task ExitAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			await (onExitAsync == null ? OnExitAsync(stateMachine) : Task.WhenAll(onExitAsync(stateMachine, this), OnExitAsync(stateMachine)));
 
-		internal virtual async Task PauseAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => 
-			await Task.WhenAll(onPauseAsync?.Invoke(stateMachine, this), OnPauseAsync(stateMachine));
+		internal virtual async Task PauseAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			await (onPauseAsync == null ? OnPauseAsync(stateMachine) : Task.WhenAll(onPauseAsync(stateMachine, this), OnPauseAsync(stateMachine)));
 
-		internal virtual async Task ResumeAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => 
-			await Task.WhenAll(onResumeAsync?.Invoke(stateMachine, this), OnResumeAsync(stateMachine));
+		internal virtual async Task ResumeAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			await (onResumeAsync == null ? OnResumeAsync(stateMachine) : Task.WhenAll(onResumeAsync(stateMachine, this), OnResumeAsync(stateMachine)));
 
 		internal virtual async Task SendMessageAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
-			if (!onMessagesAsync.ContainsKey(message)) {
-				return;
-			}
-			await onMessagesAsync[message](stateMachine, this, arg);
+			if (onMessagesAsync.ContainsKey(message)) { await onMessagesAsync[message](stateMachine, this, arg); }
 		}
 
 		#endregion
 
-		#region On<Transition> methods
-		
+		#region On transition methods
+
 		/// <summary>
 		/// OnEnter is called when entering this state
 		/// </summary>
@@ -64,8 +61,8 @@ namespace StateMachineNet {
 
 		#endregion
 
-		#region On<Transition> and OnMessage setters
-		
+		#region On transition or message setters
+
 		/// <summary>
 		/// Sets the action to invoke when entering this state
 		/// </summary>

@@ -5,6 +5,7 @@ using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
+	[Serializable] 
 	internal abstract partial class Transition<TStateId, TParamId, TMessageId> {
 
 		private HashSet<TParamId> parameters = new HashSet<TParamId>();
@@ -75,6 +76,7 @@ namespace StateMachineNet {
 		internal void UnsubscribeFromObservables() => observableUnsubscriptions.ForEach(x => x());
 	}
 
+	[Serializable] 
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId State;
@@ -88,6 +90,7 @@ namespace StateMachineNet {
 			new GoToTransition<TStateId, TParamId, TMessageId>(State);
 	}
 
+	[Serializable] 
 	internal partial class PushTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId State;
@@ -101,6 +104,7 @@ namespace StateMachineNet {
 			new PushTransition<TStateId, TParamId, TMessageId>(State);
 	}
 
+	[Serializable] 
 	internal partial class PopTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>

@@ -1,14 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
-	public class StateMachine : StateMachine<string, string, string> { }
-	public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
-	public class StateMachine<TStateId, TParamId> : StateMachine<TStateId, TParamId, string> { }
+	#region Class wrappers
+
+	[Serializable] public class StateMachine : StateMachine<string, string, string> { }
+	[Serializable] public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
+	[Serializable] public class StateMachine<TStateId, TParamId> : StateMachine<TStateId, TParamId, string> { }
+
+	#endregion
+
+	[Serializable]
 	public partial class StateMachine<TStateId, TParamId, TMessageId> : State<TStateId, TParamId, TMessageId> {
+
+		#region Public variables
 
 		/// <summary>
 		/// Creates a new builder for this state machine
@@ -52,12 +62,16 @@ namespace StateMachineNet {
 		/// </summary>
 		public TStateId ActiveStateId => activeStates.Peek();
 
+		#endregion
+
+		#region Private variables
+
 		// State management
 		private TStateId initialStateId;
 		private bool hasSetInitialStateId;
 		private Stack<TStateId> activeStates = new Stack<TStateId>();
 		private Dictionary<TStateId, State<TStateId, TParamId, TMessageId>> states = new Dictionary<TStateId, State<TStateId, TParamId, TMessageId>>();
-		
+
 		// Transition management
 		private Lock transitionLock = new Lock();
 		private Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>> transitions = new Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>>();
@@ -75,6 +89,7 @@ namespace StateMachineNet {
 		private Dictionary<TStateId, List<Action>> observableSubscriptions = new Dictionary<TStateId, List<Action>>();
 		private Dictionary<TStateId, List<Action>> observableUnsubscriptions = new Dictionary<TStateId, List<Action>>();
 
+		#endregion
 
 		#region Configure methods
 
@@ -367,7 +382,7 @@ namespace StateMachineNet {
 
 		#endregion
 
-		#region Utility/Helpers
+		#region Public misc.
 
 		/// <summary>
 		/// Sends a message to the active state
@@ -381,7 +396,7 @@ namespace StateMachineNet {
 		}
 
 		/// <summary>
-		/// Casts a state machine from one type to another as long as they state the same base state machine class
+		/// Casts a state machine from one type to another as long as they share the same base state machine class
 		/// </summary>
 		/// <typeparam name="TStateMachine">Type to cast to</typeparam>
 		/// <param name="args">Constructor arguments</param>
@@ -404,12 +419,20 @@ namespace StateMachineNet {
 			return copy;
 		}
 
+		#endregion
+
+		#region Private utilities
+
 		private void EvaluateTransitions(TParamId param) {
 			if (ActiveState is StateMachine<TStateId, TParamId, TMessageId> substate) {
 				substate.EvaluateTransitions();
 				return;
 			}
 			if (!canEvaluateTransitions) {
+				Log($"Cannot transition: " + (
+					!IsRunning ? "State machine is not running." :
+					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
+				));
 				return;
 			}
 			Log($"Evaluating transitions for {param}");
@@ -426,6 +449,10 @@ namespace StateMachineNet {
 				return;
 			}
 			if (!canEvaluateTransitions) {
+				Log($"Cannot transition: " + (
+					!IsRunning ? "State machine is not running." :
+					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
+				));
 				return;
 			}
 			Log($"Evaluating transitions.");
@@ -460,6 +487,17 @@ namespace StateMachineNet {
 			transitions[state].ForEach(x => x.UnsubscribeFromObservables());
 		}
 
+		private void Log(string message) {
+			if (!LogFlow.Value) {
+				return;
+			}
+			Print.Info(message);
+		}
+
+		#endregion
+
+		#region Get state
+
 		/// <summary>
 		/// Gets a state by state id
 		/// </summary>
@@ -480,11 +518,24 @@ namespace StateMachineNet {
 			return (T) states[state];
 		}
 
-		private void Log(string message) {
-			if (!LogFlow.Value) {
-				return;
+		#endregion
+
+		#region Serialize/deserialize
+
+		public byte[] Serialize() {
+			BinaryFormatter formatter = new BinaryFormatter();
+			using (MemoryStream stream = new MemoryStream()) {
+				formatter.Serialize(stream, this);
+				return stream.ToArray();
 			}
-			Print.Info(message);
+		}
+
+		public void Deserialize(byte[] data) {
+			BinaryFormatter formatter = new BinaryFormatter();
+			using (MemoryStream stream = new MemoryStream(data)) {
+				object deserialized = formatter.Deserialize(stream);
+				Configure((StateMachine<TStateId, TParamId, TMessageId>) deserialized);
+			}
 		}
 
 		#endregion

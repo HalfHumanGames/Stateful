@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
 namespace StateMachineNet.Utilities {
 
+	[Serializable]
 	public class Lock {
 
 		public bool IsLocked => locks.Count > 0;

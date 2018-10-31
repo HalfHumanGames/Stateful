@@ -3,9 +3,11 @@ using System.Collections.Generic;
 
 namespace StateMachineNet {
 
-	public class State : State<string, string, string> { }
-	public class State<TStateId> : State<TStateId, string, string> { }
-	public class State<TStateId, TParamId> : State<TStateId, TParamId, string> { }
+	[Serializable] public class State : State<string, string, string> { }
+	[Serializable] public class State<TStateId> : State<TStateId, string, string> { }
+	[Serializable] public class State<TStateId, TParamId> : State<TStateId, TParamId, string> { }
+
+	[Serializable] 
 	public partial class State<TStateId, TParamId, TMessageId> {
 
 		protected Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> onEnter;
@@ -17,7 +19,7 @@ namespace StateMachineNet {
 		
 		public State() { }
 
-		#region Flow control - used by state machine
+		#region transition action wrappers
 
 		internal virtual void Enter(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
 			onEnter?.Invoke(stateMachine, this);
@@ -48,7 +50,7 @@ namespace StateMachineNet {
 
 		#endregion
 
-		#region On<Transition> methods
+		#region On transition methods
 
 		/// <summary>
 		/// OnEnter is called when entering this state
@@ -76,7 +78,7 @@ namespace StateMachineNet {
 
 		#endregion
 
-		#region On<Transition> and OnMessage setters
+		#region On transition or message setters
 
 		/// <summary>
 		/// Sets the action to invoke when entering this state

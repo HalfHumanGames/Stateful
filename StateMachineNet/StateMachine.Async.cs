@@ -229,6 +229,10 @@ namespace StateMachineNet {
 				return;
 			}
 			if (!canEvaluateTransitions) {
+				Log($"Cannot transition: " + (
+					!IsRunning ? "State machine is not running." :
+					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
+				));
 				return;
 			}
 			Log($"Evaluating transitions for {param}");
@@ -245,6 +249,10 @@ namespace StateMachineNet {
 				return;
 			}
 			if (!canEvaluateTransitions) {
+				Log($"Cannot transition: " + (
+					!IsRunning ? "State machine is not running." :
+					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
+				));
 				return;
 			}
 			Log($"Evaluating transitions.");
