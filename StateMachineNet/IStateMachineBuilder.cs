@@ -124,7 +124,7 @@ namespace StateMachineNet {
 		/// <param name="id">Message id</param>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action);
 
 		/// <summary>
 		/// Register an on enter handler
@@ -145,7 +145,7 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
 
 		/// <summary>
 		/// Register an on exit handler
@@ -166,7 +166,7 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
 
 		/// <summary>
 		/// Register an on pause handler
@@ -187,7 +187,7 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
 	
 		/// <summary>
 		/// Register an on resume handler
@@ -208,7 +208,7 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
 
 		#endregion
 

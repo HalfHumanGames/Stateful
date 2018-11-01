@@ -3,20 +3,24 @@ using System.Collections.Generic;
 
 namespace StateMachineNet {
 
+	#region Subclasses
+
 	[Serializable] public class State : State<string, string, string> { }
 	[Serializable] public class State<TStateId> : State<TStateId, string, string> { }
 	[Serializable] public class State<TStateId, TParamId> : State<TStateId, TParamId, string> { }
 
-	[Serializable] 
+	#endregion
+
+	[Serializable]
 	public partial class State<TStateId, TParamId, TMessageId> {
 
-		protected Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> onEnter;
-		protected Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> onExit;
-		protected Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> onPause;
-		protected Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> onResume;
-		protected Dictionary<TMessageId, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object>> onMessages =
-			new Dictionary<TMessageId, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object>>();
-		
+		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onEnter;
+		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onExit;
+		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onPause;
+		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onResume;
+		protected Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler> onMessages =
+			  new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler>();
+
 		public State() { }
 
 		#region transition action wrappers
@@ -41,7 +45,9 @@ namespace StateMachineNet {
 			OnResume(stateMachine);
 		}
 
-		internal virtual void SendMessage(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+		internal virtual void SendMessage(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) {
 			if (!onMessages.ContainsKey(message)) {
 				return;
 			}
@@ -86,9 +92,9 @@ namespace StateMachineNet {
 		/// <param name="action">On enter action</param>
 		/// <returns>Returns this state to allow method chaining</returns>
 		public State<TStateId, TParamId, TMessageId> OnEnter(
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
 		) {
-			onEnter = action;
+			onEnter = handler;
 			return this;
 		}
 
@@ -98,9 +104,9 @@ namespace StateMachineNet {
 		/// <param name="action">On enter action</param>
 		/// <returns>Returns this state to allow method chaining</returns>
 		public State<TStateId, TParamId, TMessageId> OnExit(
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
 		) {
-			onExit = action;
+			onExit = handler;
 			return this;
 		}
 
@@ -110,9 +116,9 @@ namespace StateMachineNet {
 		/// <param name="action">On pause action</param>
 		/// <returns>Returns this state to allow method chaining</returns>
 		public State<TStateId, TParamId, TMessageId> OnPause(
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
 		) {
-			onPause = action;
+			onPause = handler;
 			return this;
 		}
 
@@ -122,15 +128,15 @@ namespace StateMachineNet {
 		/// <param name="action">On resume action</param>
 		/// <returns>Returns this state to allow method chaining</returns>
 		public State<TStateId, TParamId, TMessageId> OnResume(
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
 		) {
-			onResume = action;
+			onResume = handler;
 			return this;
 		}
 
 		public State<TStateId, TParamId, TMessageId> On(
 			TMessageId message,
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, object> action
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
 		) {
 			onMessages[message] = action;
 			return this;

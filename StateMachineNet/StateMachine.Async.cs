@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -7,13 +6,20 @@ namespace StateMachineNet {
 
 	public partial class StateMachine<TStateId, TParamId, TMessageId> : State<TStateId, TParamId, TMessageId> {
 
+		#region Delegate definitions
+
+		public delegate Task OnTransitionAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state);
+		public delegate Task OnMessageAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg);
+
+		#endregion
+
 		#region State method overrides
 
 		internal override async Task EnterAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
 			if (IsSubstate) {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
-					parent = parent.ParentState;
+					parent = parent.ParenTStateId;
 					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
@@ -75,7 +81,7 @@ namespace StateMachineNet {
 					Log($"State {state} not found, searching parents for state.");
 					StateMachine<TStateId, TParamId, TMessageId> parent = this;
 					do {
-						parent = parent.ParentState;
+						parent = parent.ParenTStateId;
 						if (parent.states.ContainsKey(state)) {
 							await parent.GoToAsync(state);
 						}

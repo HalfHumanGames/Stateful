@@ -7,7 +7,7 @@ using StateMachineNet.Utilities;
 
 namespace StateMachineNet {
 
-	#region Class wrappers
+	#region Subclasses
 
 	[Serializable] public class StateMachine : StateMachine<string, string, string> { }
 	[Serializable] public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
@@ -18,22 +18,35 @@ namespace StateMachineNet {
 	[Serializable]
 	public partial class StateMachine<TStateId, TParamId, TMessageId> : State<TStateId, TParamId, TMessageId> {
 
+		#region Delegate definitions
+
+		public delegate void OnTransitionHandler(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state
+		);
+
+		public delegate void OnMessageHandler(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg
+		);
+
+		#endregion
+
 		#region Public variables
 
 		/// <summary>
 		/// Creates a new builder for this state machine
 		/// </summary>
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> Builder => StateMachineBuilder.Create<TStateId, TParamId, TMessageId>();
+		public IStateMachineBuilder<TStateId, TParamId, TMessageId> Builder => 
+			StateMachineBuilder.Create<TStateId, TParamId, TMessageId>();
 
 		/// <summary>
 		/// Checks if this state machine is a substate machine
 		/// </summary>
-		public bool IsSubstate => ParentState != null;
+		public bool IsSubstate => ParenTStateId != null;
 
 		/// <summary>
 		/// Gets the parent state if this is a substate machine
 		/// </summary>
-		public StateMachine<TStateId, TParamId, TMessageId> ParentState { get; private set; }
+		public StateMachine<TStateId, TParamId, TMessageId> ParenTStateId { get; private set; }
 
 		/// <summary>
 		/// Enables or disables logging the state machine flow
@@ -58,7 +71,7 @@ namespace StateMachineNet {
 		public State<TStateId, TParamId, TMessageId> ActiveState => activeStates.Count > 0 ? states[ActiveStateId] : null;
 
 		/// <summary>
-		/// Gets the state id of the  specified state
+		/// Gets the state id of the active state
 		/// </summary>
 		public TStateId ActiveStateId => activeStates.Peek();
 
@@ -70,12 +83,15 @@ namespace StateMachineNet {
 		private TStateId initialStateId;
 		private bool hasSetInitialStateId;
 		private Stack<TStateId> activeStates = new Stack<TStateId>();
-		private Dictionary<TStateId, State<TStateId, TParamId, TMessageId>> states = new Dictionary<TStateId, State<TStateId, TParamId, TMessageId>>();
+		private Dictionary<TStateId, State<TStateId, TParamId, TMessageId>> states = 
+			new Dictionary<TStateId, State<TStateId, TParamId, TMessageId>>();
 
 		// Transition management
 		private Lock transitionLock = new Lock();
-		private Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>> transitions = new Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>>();
-		private List<Transition<TStateId, TParamId, TMessageId>> globalTransitions = new List<Transition<TStateId, TParamId, TMessageId>>();
+		private Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>> transitions = 
+			new Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>>();
+		private List<Transition<TStateId, TParamId, TMessageId>> globalTransitions = 
+			new List<Transition<TStateId, TParamId, TMessageId>>();
 		private bool canEvaluateTransitions => IsRunning && !transitionLock.IsLocked && activeStates.Count > 0;
 		private List<Transition<TStateId, TParamId, TMessageId>> activeTransitions => transitions.ContainsKey(ActiveStateId) ?
 			globalTransitions.Concat(transitions[ActiveStateId]).ToList() : globalTransitions;
@@ -118,7 +134,7 @@ namespace StateMachineNet {
 			if (IsSubstate) {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
-					parent = parent.ParentState;
+					parent = parent.ParenTStateId;
 					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
@@ -131,7 +147,9 @@ namespace StateMachineNet {
 			base.Exit(stateMachine);
 		}
 
-		internal override void SendMessage(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+		internal override void SendMessage(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) {
 			base.SendMessage(stateMachine, message, arg);
 			SendMessage(message, arg);
 		}
@@ -180,7 +198,7 @@ namespace StateMachineNet {
 					Log($"State {state} not found, searching parents for state.");
 					StateMachine<TStateId, TParamId, TMessageId> parent = this;
 					do {
-						parent = parent.ParentState;
+						parent = parent.ParenTStateId;
 						if (parent.states.ContainsKey(state)) {
 							parent.GoTo(state);
 							return;
@@ -398,11 +416,13 @@ namespace StateMachineNet {
 		/// <summary>
 		/// Casts a state machine from one type to another as long as they share the same base state machine class
 		/// </summary>
-		/// <typeparam name="TStateMachine">Type to cast to</typeparam>
+		/// <typeparam name="TStateIdMachine">Type to cast to</typeparam>
 		/// <param name="args">Constructor arguments</param>
 		/// <returns>The casted state machine</returns>
-		public TStateMachine As<TStateMachine>(params object[] args) where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
-			TStateMachine copy = (TStateMachine) Activator.CreateInstance(typeof(TStateMachine), args);
+		public TStateIdMachine As<TStateIdMachine>(params object[] args) 
+			where TStateIdMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
+
+			TStateIdMachine copy = (TStateIdMachine) Activator.CreateInstance(typeof(TStateIdMachine), args);
 			copy.LogFlow = LogFlow;
 			copy.IsRunning = IsRunning;
 			copy.initialStateId = initialStateId;
@@ -503,7 +523,8 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="state">State id of state to get</param>
 		/// <returns>State</returns>
-		public State<TStateId, TParamId, TMessageId> GetState(TStateId state) => GetState<State<TStateId, TParamId, TMessageId>>(state);
+		public State<TStateId, TParamId, TMessageId> GeTStateId(TStateId state) => 
+			GeTStateId<State<TStateId, TParamId, TMessageId>>(state);
 
 		/// <summary>
 		/// Gets a state by state id, but casted as the specified type
@@ -511,7 +532,7 @@ namespace StateMachineNet {
 		/// <typeparam name="T">Type to cast the state as</typeparam>
 		/// <param name="state">State id of state to get</param>
 		/// <returns>State casted as the specifed type</returns>
-		public T GetState<T>(TStateId state) where T : State<TStateId, TParamId, TMessageId> {
+		public T GeTStateId<T>(TStateId state) where T : State<TStateId, TParamId, TMessageId> {
 			if (!states.ContainsKey(state)) {
 				throw new ArgumentException($"State {state} does not exist.");
 			}
@@ -552,7 +573,7 @@ namespace StateMachineNet {
 				initialStateId = stateId;
 			}
 			if (state is StateMachine<TStateId, TParamId, TMessageId> substate) {
-				substate.ParentState = this;
+				substate.ParenTStateId = this;
 				transitions = transitions.Union(substate.transitions).ToDictionary(x => x.Key, x => x.Value);
 				bools = bools.Union(substate.bools).ToDictionary(x => x.Key, x => x.Value);
 				floats = floats.Union(substate.floats).ToDictionary(x => x.Key, x => x.Value);
