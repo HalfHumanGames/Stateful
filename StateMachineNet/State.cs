@@ -14,16 +14,16 @@ namespace StateMachineNet {
 	[Serializable]
 	public partial class State<TStateId, TParamId, TMessageId> {
 
-		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onEnter;
-		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onExit;
-		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onPause;
-		protected StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onResume;
-		protected Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler> onMessages =
-			  new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler>();
+		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onEnter;
+		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onExit;
+		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onPause;
+		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onResume;
+		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler> onMessages =
+			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler>();
 
 		public State() { }
 
-		#region transition action wrappers
+		#region Internal transition handler wrappers used by state machine
 
 		internal virtual void Enter(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
 			onEnter?.Invoke(stateMachine, this);
@@ -47,16 +47,51 @@ namespace StateMachineNet {
 
 		internal virtual void SendMessage(
 			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) { if (onMessages.ContainsKey(message)) { onMessages[message].Invoke(stateMachine, this, arg); } }
+
+		#endregion
+
+		#region Internal on transition or message setters used by state machine builder
+
+		internal State<TStateId, TParamId, TMessageId> OnEnter(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
 		) {
-			if (!onMessages.ContainsKey(message)) {
-				return;
-			}
-			onMessages[message].Invoke(stateMachine, this, arg);
+			onEnter = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> OnExit(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
+		) {
+			onExit = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> OnPause(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
+		) {
+			onPause = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> OnResume(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
+		) {
+			onResume = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> On(
+			TMessageId message,
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
+		) {
+			onMessages[message] = action;
+			return this;
 		}
 
 		#endregion
 
-		#region On transition methods
+		#region Protected on transition methods available for override
 
 		/// <summary>
 		/// OnEnter is called when entering this state
@@ -84,64 +119,5 @@ namespace StateMachineNet {
 
 		#endregion
 
-		#region On transition or message setters
-
-		/// <summary>
-		/// Sets the action to invoke when entering this state
-		/// </summary>
-		/// <param name="action">On enter action</param>
-		/// <returns>Returns this state to allow method chaining</returns>
-		public State<TStateId, TParamId, TMessageId> OnEnter(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
-			onEnter = handler;
-			return this;
-		}
-
-		/// <summary>
-		/// Sets the action to invoke when exiting this state
-		/// </summary>
-		/// <param name="action">On enter action</param>
-		/// <returns>Returns this state to allow method chaining</returns>
-		public State<TStateId, TParamId, TMessageId> OnExit(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
-			onExit = handler;
-			return this;
-		}
-
-		/// <summary>
-		/// Sets the action to invoke when pausing this state
-		/// </summary>
-		/// <param name="action">On pause action</param>
-		/// <returns>Returns this state to allow method chaining</returns>
-		public State<TStateId, TParamId, TMessageId> OnPause(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
-			onPause = handler;
-			return this;
-		}
-
-		/// <summary>
-		/// Sets the action to invoke when resuming this state
-		/// </summary>
-		/// <param name="action">On resume action</param>
-		/// <returns>Returns this state to allow method chaining</returns>
-		public State<TStateId, TParamId, TMessageId> OnResume(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
-			onResume = handler;
-			return this;
-		}
-
-		public State<TStateId, TParamId, TMessageId> On(
-			TMessageId message,
-			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
-		) {
-			onMessages[message] = action;
-			return this;
-		}
-
-		#endregion
 	}
 }

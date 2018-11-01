@@ -8,7 +8,10 @@ namespace StateMachineNet {
 	[Serializable] 
 	internal abstract partial class Transition<TStateId, TParamId, TMessageId> {
 
+		// Parameters this transition considers
 		private HashSet<TParamId> parameters = new HashSet<TParamId>();
+
+		// Parameter checks
 		private List<Tuple<TParamId, Func<bool, bool>>> boolChecks =
 			new List<Tuple<TParamId, Func<bool, bool>>>();
 		private List<Tuple<TParamId, Func<float, bool>>> floatChecks =
@@ -18,16 +21,21 @@ namespace StateMachineNet {
 		private List<Tuple<TParamId, Func<string, bool>>> stringChecks =
 			new List<Tuple<TParamId, Func<string, bool>>>();
 		private HashSet<TParamId> triggerChecks = new HashSet<TParamId>();
+
+		// Observable management
 		private Dictionary<int, bool> observableChecks = new Dictionary<int, bool>();
 		private List<Action> observableRefreshes = new List<Action>();
 		private List<Action> observableSubscriptions = new List<Action>();
 		private List<Action> observableUnsubscriptions = new List<Action>();
 
+		// Checks if this state considers the specifed parameter
+		internal bool HasParam(TParamId param) => parameters.Contains(param);
+
+		// Abstract methods
 		internal abstract void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine);
 		internal abstract Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks();
 
-		internal bool HasParam(TParamId param) => parameters.Contains(param);
-
+		// Used by state machine
 		internal bool EvaluateTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
 			!observableChecks.Any(x => !x.Value) &&
 			!boolChecks.Any(x => !x.Item2(stateMachine.GetBool(x.Item1))) &&
@@ -35,6 +43,8 @@ namespace StateMachineNet {
 			!intChecks.Any(x => !x.Item2(stateMachine.GetInt(x.Item1))) &&
 			!stringChecks.Any(x => !x.Item2(stateMachine.GetString(x.Item1))) &&
 			!triggerChecks.Any(x => !stateMachine.GetTrigger(x));
+
+		#region Internal methods used by the state machine builder to add checks
 
 		internal void AddBoolCheck(TParamId param, Func<bool, bool> check) {
 			parameters.Add(param);
@@ -71,10 +81,19 @@ namespace StateMachineNet {
 				observableChecks[hashCode] = check(observable
 			);
 		}
+
+		#endregion
+
+		#region Observable utility methods used by the state machine
+
 		internal void RefreshObservables() => observableRefreshes.ForEach(x => x());
 		internal void SubscribeToObservables() => observableSubscriptions.ForEach(x => x());
 		internal void UnsubscribeFromObservables() => observableUnsubscriptions.ForEach(x => x());
+
+		#endregion
 	}
+
+	#region Concrete transitions: GoTo, Push, and Pop
 
 	[Serializable] 
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
@@ -113,4 +132,6 @@ namespace StateMachineNet {
 		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
 			new PopTransition<TStateId, TParamId, TMessageId>();
 	}
+
+	#endregion
 }

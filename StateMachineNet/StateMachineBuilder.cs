@@ -126,11 +126,13 @@ namespace StateMachineNet {
 			return this;
 		}
 
-
 		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
-			TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+			TMessageId id, 
+			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
 		) {
-			Build.GeTStateId(statesToAddTransitionsTo[0]).On(id, (stateMachine, state, arg) => action(stateMachine, state));
+			Build.GeTStateId(statesToAddTransitionsTo[0]).On(id, (stateMachine, state, arg) => 
+				action(stateMachine, state)
+			);
 			return this;
 		}
 
@@ -305,6 +307,7 @@ namespace StateMachineNet {
 
 		#endregion
 
-		public StateMachine<TStateId, TParamId, TMessageId> Build { get; } = new StateMachine<TStateId, TParamId, TMessageId>();
+		public StateMachine<TStateId, TParamId, TMessageId> Build { get; } = 
+			new StateMachine<TStateId, TParamId, TMessageId>();
 	}
 }

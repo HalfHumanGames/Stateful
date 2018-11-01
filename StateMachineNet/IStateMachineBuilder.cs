@@ -4,7 +4,9 @@ using StateMachineNet.Utilities;
 namespace StateMachineNet {
 
 	// Implemented by StateMachineBuilder
-	public interface IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> : IStateMachineBuilder<TStateId, TParamId, TMessageId>, IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> { }
+	public interface IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> : 
+		IStateMachineBuilder<TStateId, TParamId, TMessageId>, 
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> { }
 
 	// Initializer
 	public interface IStateMachineBuilder<TStateId, TParamId, TMessageId> : IAddState<TStateId, TParamId, TMessageId> {
@@ -57,7 +59,9 @@ namespace StateMachineNet {
 		/// <param name="name">State id</param>
 		/// <param name="state">State</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(TStateId name, State<TStateId, TParamId, TMessageId> state);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
+			TStateId name, State<TStateId, TParamId, TMessageId> state
+		);
 		
 		/// <summary>
 		/// Adds a new base state to the state machine
@@ -90,7 +94,8 @@ namespace StateMachineNet {
 	}
 
 
-	public partial interface IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> : IAddTransition<TStateId, TParamId, TMessageId>, IAddState<TStateId, TParamId, TMessageId> {
+	public partial interface IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> : 
+		IAddTransition<TStateId, TParamId, TMessageId>, IAddState<TStateId, TParamId, TMessageId> {
 
 		#region Handler setters
 
@@ -108,7 +113,9 @@ namespace StateMachineNet {
 		/// <param name="id">Message id</param>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
+			TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>> action
+		);
 	
 		/// <summary>
 		/// Register a custom message handler
@@ -116,7 +123,10 @@ namespace StateMachineNet {
 		/// <param name="id">Message id</param>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
+			TMessageId id, 
+			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
+		);
 	
 		/// <summary>
 		/// Register a custom message handler
@@ -124,7 +134,10 @@ namespace StateMachineNet {
 		/// <param name="id">Message id</param>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
+			TMessageId id, 
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
+		);
 
 		/// <summary>
 		/// Register an on enter handler
@@ -138,14 +151,18 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(Action<StateMachine<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(
+			Action<StateMachine<TStateId, TParamId, TMessageId>> action
+		);
 
 		/// <summary>
 		/// Register an on enter handler
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
+		);
 
 		/// <summary>
 		/// Register an on exit handler
@@ -159,14 +176,18 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(Action<StateMachine<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(
+			Action<StateMachine<TStateId, TParamId, TMessageId>> action
+		);
 
 		/// <summary>
 		/// Register an on exit handler
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
+		);
 
 		/// <summary>
 		/// Register an on pause handler
@@ -180,14 +201,18 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(Action<StateMachine<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(
+			Action<StateMachine<TStateId, TParamId, TMessageId>> action
+		);
 
 		/// <summary>
 		/// Register an on pause handler
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
+		);
 	
 		/// <summary>
 		/// Register an on resume handler
@@ -201,14 +226,18 @@ namespace StateMachineNet {
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(Action<StateMachine<TStateId, TParamId, TMessageId>> action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(
+			Action<StateMachine<TStateId, TParamId, TMessageId>> action
+		);
 
 		/// <summary>
 		/// Register an on resume handler
 		/// </summary>
 		/// <param name="action">Handler</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action);
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(
+			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
+		);
 
 		#endregion
 
@@ -230,7 +259,9 @@ namespace StateMachineNet {
 		StateMachine<TStateId, TParamId, TMessageId> Build { get; } // Finalizer
 	}
 
-	public interface IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> : IAddCondition<TStateId, TParamId, TMessageId>, IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> {
+	public interface IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> : 
+		IAddCondition<TStateId, TParamId, TMessageId>, 
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> {
 		
 		/// <summary>
 		/// Specifies that the subsequent condition(s) can satisfy the transition irregardless of other conditions
@@ -246,7 +277,9 @@ namespace StateMachineNet {
 		/// <param name="param">Parameter id</param>
 		/// <param name="check">Function to check if parameter meets the condition</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenBool(TParamId param, Func<bool, bool> check);
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenBool(
+			TParamId param, Func<bool, bool> check
+		);
 
 		/// <summary>
 		/// Adds a float condition to the most recently added transition
@@ -254,7 +287,9 @@ namespace StateMachineNet {
 		/// <param name="param">Parameter id</param>
 		/// <param name="check">Function to check if parameter meets the condition</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenFloat(TParamId param, Func<float, bool> check);
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenFloat(
+			TParamId param, Func<float, bool> check
+		);
 	
 		/// <summary>
 		/// Adds an int condition to the most recently added transition
@@ -262,7 +297,9 @@ namespace StateMachineNet {
 		/// <param name="param">Parameter id</param>
 		/// <param name="check">Function to check if parameter meets the condition</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenInt(TParamId param, Func<int, bool> check);
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenInt(
+			TParamId param, Func<int, bool> check
+		);
 		
 		/// <summary>
 		/// Adds a string condition to the most recently added transition
@@ -270,7 +307,9 @@ namespace StateMachineNet {
 		/// <param name="param">Parameter id</param>
 		/// <param name="check">Function to check if parameter meets the condition</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenString(TParamId param, Func<string, bool> check);
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenString(
+			TParamId param, Func<string, bool> check
+		);
 	
 		/// <summary>
 		/// Adds a trigger condition to the most recently added transition
@@ -285,6 +324,8 @@ namespace StateMachineNet {
 		/// <typeparam name="T">Observable value type</typeparam>
 		/// <param name="param">Observable</param>
 		/// <returns>Returns a fluent interface</returns>
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> When<T>(Observable<T> param, Func<Observable<T>, bool> check);
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> When<T>(
+			Observable<T> param, Func<Observable<T>, bool> check
+		);
 	}
 }

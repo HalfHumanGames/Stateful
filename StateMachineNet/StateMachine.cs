@@ -21,11 +21,14 @@ namespace StateMachineNet {
 		#region Delegate definitions
 
 		public delegate void OnTransitionHandler(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
+			State<TStateId, TParamId, TMessageId> state
 		);
 
 		public delegate void OnMessageHandler(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
+			State<TStateId, TParamId, TMessageId> state, 
+			object arg
 		);
 
 		#endregion
@@ -41,12 +44,12 @@ namespace StateMachineNet {
 		/// <summary>
 		/// Checks if this state machine is a substate machine
 		/// </summary>
-		public bool IsSubstate => ParenTStateId != null;
+		public bool IsSubstate => ParentStateId != null;
 
 		/// <summary>
 		/// Gets the parent state if this is a substate machine
 		/// </summary>
-		public StateMachine<TStateId, TParamId, TMessageId> ParenTStateId { get; private set; }
+		public StateMachine<TStateId, TParamId, TMessageId> ParentStateId { get; private set; }
 
 		/// <summary>
 		/// Enables or disables logging the state machine flow
@@ -134,7 +137,7 @@ namespace StateMachineNet {
 			if (IsSubstate) {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
-					parent = parent.ParenTStateId;
+					parent = parent.ParentStateId;
 					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
@@ -198,7 +201,7 @@ namespace StateMachineNet {
 					Log($"State {state} not found, searching parents for state.");
 					StateMachine<TStateId, TParamId, TMessageId> parent = this;
 					do {
-						parent = parent.ParenTStateId;
+						parent = parent.ParentStateId;
 						if (parent.states.ContainsKey(state)) {
 							parent.GoTo(state);
 							return;
@@ -573,7 +576,7 @@ namespace StateMachineNet {
 				initialStateId = stateId;
 			}
 			if (state is StateMachine<TStateId, TParamId, TMessageId> substate) {
-				substate.ParenTStateId = this;
+				substate.ParentStateId = this;
 				transitions = transitions.Union(substate.transitions).ToDictionary(x => x.Key, x => x.Value);
 				bools = bools.Union(substate.bools).ToDictionary(x => x.Key, x => x.Value);
 				floats = floats.Union(substate.floats).ToDictionary(x => x.Key, x => x.Value);

@@ -8,8 +8,16 @@ namespace StateMachineNet {
 
 		#region Delegate definitions
 
-		public delegate Task OnTransitionAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state);
-		public delegate Task OnMessageAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg);
+		public delegate Task OnTransitionAsyncHandler(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
+			State<TStateId, TParamId, TMessageId> state
+		);
+
+		public delegate Task OnMessageAsyncHandler(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
+			State<TStateId, TParamId, TMessageId> state, 
+			object arg
+		);
 
 		#endregion
 
@@ -19,7 +27,7 @@ namespace StateMachineNet {
 			if (IsSubstate) {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
-					parent = parent.ParenTStateId;
+					parent = parent.ParentStateId;
 					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
@@ -32,7 +40,9 @@ namespace StateMachineNet {
 			await base.ExitAsync(stateMachine);
 		}
 
-		internal override async Task SendMessageAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+		internal override async Task SendMessageAsync(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) {
 			await base.SendMessageAsync(stateMachine, message, arg);
 			await SendMessageAsync(message, arg);
 		}
@@ -81,7 +91,7 @@ namespace StateMachineNet {
 					Log($"State {state} not found, searching parents for state.");
 					StateMachine<TStateId, TParamId, TMessageId> parent = this;
 					do {
-						parent = parent.ParenTStateId;
+						parent = parent.ParentStateId;
 						if (parent.states.ContainsKey(state)) {
 							await parent.GoToAsync(state);
 						}
