@@ -98,29 +98,29 @@ namespace StateMachineNet {
 	[Serializable] 
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal TStateId State;
+		internal TStateId state;
 
-		internal GoToTransition(TStateId state) => State = state;
+		internal GoToTransition(TStateId state) => this.state = state;
 
 		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			stateMachine.GoTo(State);
+			stateMachine.GoTo(state);
 
 		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
-			new GoToTransition<TStateId, TParamId, TMessageId>(State);
+			new GoToTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
 	[Serializable] 
 	internal partial class PushTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal TStateId State;
+		internal TStateId state;
 
-		internal PushTransition(TStateId state) => State = state;
+		internal PushTransition(TStateId state) => this.state = state;
 
 		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			stateMachine.Push(State);
+			stateMachine.Push(state);
 
 		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
-			new PushTransition<TStateId, TParamId, TMessageId>(State);
+			new PushTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
 	[Serializable] 

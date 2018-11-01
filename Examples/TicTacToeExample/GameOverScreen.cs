@@ -1,4 +1,4 @@
-﻿using StateMachineNet;
+using StateMachineNet;
 using StateMachineNet.Utilities;
 
 namespace TicTacToeExample {

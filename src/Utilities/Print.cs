@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 
 namespace StateMachineNet.Utilities {
@@ -20,7 +20,7 @@ namespace StateMachineNet.Utilities {
 		private static void Line(object text, ConsoleColor colour = defaultColor) {
 			ConsoleColor originalColor = Console.ForegroundColor;
 			Console.ForegroundColor = colour;
-			Console.WriteLine(text.ToString());
+			Print.Log(text.ToString());
 			Console.ForegroundColor = originalColor;
 			Trace.WriteLine(text.ToString());
 		}

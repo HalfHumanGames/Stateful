@@ -1,5 +1,6 @@
 using System;
 using StateMachineNet;
+using StateMachineNet.Utilities;
 
 namespace SerializeExample {
 
@@ -22,19 +23,19 @@ namespace SerializeExample {
 			byte[] data = stateMachine.Serialize();
 
 			// First state
-			Console.WriteLine($"1: {stateMachine.ActiveStateId}");
+			Print.Log($"1: {stateMachine.ActiveStateId}");
 
 			// Go to second state
 			stateMachine.SetTrigger("Toggle");
 
 			// Second state
-			Console.WriteLine($"2: {stateMachine.ActiveStateId}");
+			Print.Log($"2: {stateMachine.ActiveStateId}");
 
 			// Deserialize
 			stateMachine.Deserialize(data);
 
 			// First state
-			Console.WriteLine($"3: {stateMachine.ActiveStateId}");
+			Print.Log($"3: {stateMachine.ActiveStateId}");
 
 			Console.ReadLine();
 		}

@@ -1,4 +1,5 @@
 using StateMachineNet;
+using StateMachineNet.Utilities;
 using System;
 
 namespace ArcadeExample {
@@ -24,15 +25,15 @@ namespace ArcadeExample {
 			}
 
 			// Print the title, description, and options
-			Console.WriteLine(Title.ToUpper());
-			Console.WriteLine("-----------------------");
+			Print.Log(Title.ToUpper());
+			Print.Log("-----------------------");
 			if (!string.IsNullOrEmpty(Description)) {
-				Console.WriteLine(Description);
-				Console.WriteLine("-----------------------");
+				Print.Log(Description);
+				Print.Log("-----------------------");
 			}
-			Console.WriteLine("What do you want to do?");
+			Print.Log("What do you want to do?");
 			for (int i = 0; i < Options.Length; i++) {
-				Console.WriteLine($"{i + 1}) {Options[i]}");
+				Print.Log($"{i + 1}) {Options[i]}");
 			}
 		}
 

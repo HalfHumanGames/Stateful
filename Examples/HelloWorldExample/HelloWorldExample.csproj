@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\StateMachineNet\StateMachineNet.csproj" />
+    <ProjectReference Include="..\..\src\StateMachineNet.csproj" />
   </ItemGroup>
 
 </Project>

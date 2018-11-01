@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using StateMachineNet;
+using StateMachineNet.Utilities;
 
 namespace AsyncExample {
 
@@ -15,26 +16,26 @@ namespace AsyncExample {
 			StateMachine stateMachine = StateMachineBuilder.Create().
 				AddState("First").
 					OnEnterAsync(async (machine) => {
-						Console.WriteLine("Getting data.");
+						Print.Log("Getting data.");
 						string data = await GetData();
-						Console.WriteLine($"Data: {data}");
+						Print.Log($"Data: {data}");
 						await machine.SetTriggerAsync("Done");
 					}).
 					GoTo("Second").WhenTrigger("Done").
 				AddState("Second").
 					OnEnterAsync(async (machine) => {
-						Console.WriteLine("Getting data.");
+						Print.Log("Getting data.");
 						string data = await GetData();
-						Console.WriteLine($"Data: {data}");
+						Print.Log($"Data: {data}");
 						// TODO: Add Stop conditions
-						//Console.WriteLine("Setting trigger: Done");
+						//Print.Log("Setting trigger: Done");
 						//await machine.SetTriggerAsync("Done");
 					}).
 				Build.As<StateMachine>();
 
 			stateMachine.LogFlow.Value = true;
 			await stateMachine.StartAsync();
-			Console.WriteLine($"Active state: {stateMachine.ActiveStateId}");
+			Print.Log($"Active state: {stateMachine.ActiveStateId}");
 			Console.ReadLine();
 		}
 

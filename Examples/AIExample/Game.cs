@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using StateMachineNet.Utilities;
 
 namespace AIExample {
 
@@ -40,7 +41,7 @@ namespace AIExample {
 				gui += "\n";
 			}
 			gui += "\nPress (q) to quit.";
-			Console.WriteLine(gui);
+			Print.Log(gui);
 		}
 
 		public void Update(char input) {
