@@ -1,5 +1,5 @@
-# StateMachine.NET
-[StateMachine.NET](https://halfhumangames.github.io/StateMachine.NET/) is a powerful finite state machine library for .NET
+# Stateful
+[Stateful](https://halfhumangames.github.io/Stateful/) is a powerful finite state machine library for .NET
 
 ```cs
 
