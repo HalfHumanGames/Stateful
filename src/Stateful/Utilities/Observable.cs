@@ -1,12 +1,18 @@
 using System;
 
-namespace StateMachineNet.Utilities {
+namespace Stateful.Utilities {
+
+	public interface IObservable {
+
+		event Action<IObservable> Changed;
+	}
 
 	[Serializable] 
-	public class Observable<T> {
+	public class Observable<T> : IObservable {
 
 		public delegate void ValueChangedHandler(Observable<T> observable, T previousValue, T newValue);
 		public event ValueChangedHandler ValueChanged;
+		public event Action<IObservable> Changed;
 
 		private T value;
 		public T Value {
@@ -18,6 +24,7 @@ namespace StateMachineNet.Utilities {
 				T temp = this.value;
 				this.value = value;
 				ValueChanged?.Invoke(this, temp, this.value);
+				Changed?.Invoke(this);
 			}
 		}
 

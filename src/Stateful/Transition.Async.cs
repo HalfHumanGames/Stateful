@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace StateMachineNet {
+namespace Stateful {
 
 	internal abstract partial class Transition<TStateId, TParamId, TMessageId> {
 

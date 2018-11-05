@@ -1,4 +1,4 @@
-using StateMachineNet;
+using Stateful;
 using System;
 
 namespace ArcadeExample {

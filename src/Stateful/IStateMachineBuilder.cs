@@ -1,7 +1,7 @@
 using System;
-using StateMachineNet.Utilities;
+using Stateful.Utilities;
 
-namespace StateMachineNet {
+namespace Stateful {
 
 	// Implemented by StateMachineBuilder
 	public interface IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> : 
@@ -137,6 +137,46 @@ namespace StateMachineNet {
 		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
 			TMessageId id, 
 			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
+		);
+
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(TMessageId id, Func<T> action);
+	
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
+			TMessageId id, Func<StateMachine<TStateId, TParamId, TMessageId>, T> action
+		);
+	
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
+			TMessageId id, 
+			Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, T> action
+		);
+	
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
+			TMessageId id, 
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> action
 		);
 
 		/// <summary>
@@ -325,7 +365,7 @@ namespace StateMachineNet {
 		/// <param name="param">Observable</param>
 		/// <returns>Returns a fluent interface</returns>
 		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> When<T>(
-			Observable<T> param, Func<Observable<T>, bool> check
+			Observable<T> param, Func<T, bool> check
 		);
 	}
 }

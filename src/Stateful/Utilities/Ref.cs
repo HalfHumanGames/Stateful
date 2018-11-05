@@ -1,6 +1,6 @@
 using System;
 
-namespace StateMachineNet.Utilities {
+namespace Stateful.Utilities {
 
 	[Serializable] 
 	public class Ref<T> where T : struct {

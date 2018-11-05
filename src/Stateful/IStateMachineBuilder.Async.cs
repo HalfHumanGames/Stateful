@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace StateMachineNet {
+namespace Stateful {
 
 	public partial interface IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> :
 		IAddTransition<TStateId, TParamId, TMessageId>,
@@ -46,6 +46,45 @@ namespace StateMachineNet {
 		/// <returns>Returns a fluent interface</returns>
 		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnAsync(
 			TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler action
+		);
+
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnAsync<T>(TMessageId id, Func<Task<T>> action);
+
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnAsync<T>(
+			TMessageId id, Func<StateMachine<TStateId, TParamId, TMessageId>, Task<T>> action
+		);
+
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnAsync<T>(
+			TMessageId id,
+			Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, Task<T>> action
+		);
+
+		/// <summary>
+		/// Register a custom message handler
+		/// </summary>
+		/// <param name="id">Message id</param>
+		/// <param name="action">Handler</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnAsync<T>(
+			TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler<T> action
 		);
 
 		/// <summary>

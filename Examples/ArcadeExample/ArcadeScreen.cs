@@ -1,5 +1,5 @@
-using StateMachineNet;
-using StateMachineNet.Utilities;
+using Stateful;
+using Stateful.Utilities;
 using System;
 
 namespace ArcadeExample {
@@ -20,7 +20,7 @@ namespace ArcadeExample {
 
 			// Do not clear the console if logging is enabled so we
 			// can see the internal flow of the state machine
-			if (!arcade.LogFlow.Value) {
+			if (!arcade.LogFlow) {
 				Console.Clear();
 			}
 

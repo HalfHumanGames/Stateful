@@ -1,6 +1,4 @@
 using System;
-using StateMachineNet;
-using StateMachineNet.Utilities;
 
 namespace TicTacToeExample {
 
@@ -37,17 +35,18 @@ namespace TicTacToeExample {
 		private static void Main(string[] args) {
 
 			// The constructor configures the state machine
-			TicTacToe ticTacToe = new TicTacToe();
+			TicTacToe ticTacToe = new TicTacToe {
 
-			// Turn on to log the state machine flow when debugging
-			ticTacToe.LogFlow.Value = true;
+				// Turn on to log the state machine flow when debugging
+				LogFlow = true
+			};
 
 			// Start the state machine
 			ticTacToe.Start();
 
 			// While running draw the active state and handle input
 			while (ticTacToe.IsRunning) {
-				if (!ticTacToe.LogFlow.Value) {
+				if (!ticTacToe.LogFlow) {
 					Console.Clear();
 				}
 				ticTacToe.Draw(); // Wrapper for ActiveState.Draw

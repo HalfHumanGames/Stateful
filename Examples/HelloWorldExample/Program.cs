@@ -1,5 +1,5 @@
-﻿using StateMachineNet;
-using StateMachineNet.Utilities;
+using Stateful;
+using Stateful.Utilities;
 using System.Threading;
 
 namespace HelloWorldExample {
@@ -17,7 +17,7 @@ namespace HelloWorldExample {
 				Build.As<StateMachine>();
 
 			// Enable logging so you can see what goes on inside the state machine
-			stateMachine.LogFlow.Value = true;
+			stateMachine.LogFlow = true;
 
 			// Start the state machine, aka enter the first state: "Hello, world!"
 			stateMachine.Start();

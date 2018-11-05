@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace StateMachineNet {
+namespace Stateful {
 
 	public partial class State<TStateId, TParamId, TMessageId> {
 
@@ -11,6 +12,8 @@ namespace StateMachineNet {
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionAsyncHandler onResumeAsync;
 		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler> onMessagesAsync =
 			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler>();
+		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler<object>> onMessagesWithReturnValueAsync =
+			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler<object>>();
 
 		#region Internal transition handler wrappers used by state machine
 
@@ -32,7 +35,25 @@ namespace StateMachineNet {
 
 		internal virtual async Task SendMessageAsync(
 			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
-		) { if (onMessagesAsync.ContainsKey(message)) { await onMessagesAsync[message](stateMachine, this, arg); } }
+		) { 
+			if (onMessagesAsync.ContainsKey(message)) {
+				throw new ArgumentException($"No message with the id {message} found.");
+			} 
+			await onMessagesAsync[message](stateMachine, this, arg); 
+		}
+
+		internal virtual async Task<T> SendMessageAsync<T>(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) { 
+			if (!onMessagesWithReturnValueAsync.ContainsKey(message)) {
+				throw new ArgumentException($"No message with the id {message} found.");
+			} 
+			object retval = await onMessagesWithReturnValueAsync[message](stateMachine, this, arg); 
+			if (!(retval is T)) {
+				throw new ArgumentException($"Return value is not of type {typeof(T)}");
+			}
+			return (T) retval;
+		}
 
 		#endregion
 
@@ -71,6 +92,14 @@ namespace StateMachineNet {
 			StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler handler
 		) {
 			onMessagesAsync[message] = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> OnAsync<T>(
+			TMessageId message,
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageAsyncHandler<T> handler
+		) {
+			onMessagesWithReturnValueAsync[message] = async (machine, state, data) => await handler(machine, state, data);
 			return this;
 		}
 

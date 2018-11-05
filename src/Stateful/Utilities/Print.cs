@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace StateMachineNet.Utilities {
+namespace Stateful.Utilities {
 
 	public static class Print {
 
@@ -20,7 +20,7 @@ namespace StateMachineNet.Utilities {
 		private static void Line(object text, ConsoleColor colour = defaultColor) {
 			ConsoleColor originalColor = Console.ForegroundColor;
 			Console.ForegroundColor = colour;
-			Print.Log(text.ToString());
+			Console.WriteLine(text.ToString());
 			Console.ForegroundColor = originalColor;
 			Trace.WriteLine(text.ToString());
 		}

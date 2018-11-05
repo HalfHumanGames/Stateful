@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using StateMachineNet;
-using StateMachineNet.Utilities;
+using Stateful;
+using Stateful.Utilities;
 
 namespace AsyncExample {
 
@@ -13,7 +13,7 @@ namespace AsyncExample {
 
 		private static async Task MainAsync(string[] args) {
 
-			StateMachine stateMachine = StateMachineBuilder.Create().
+			var stateMachine = StateMachineBuilder.Create().
 				AddState("First").
 					OnEnterAsync(async (machine) => {
 						Print.Log("Getting data.");
@@ -31,9 +31,9 @@ namespace AsyncExample {
 						//Print.Log("Setting trigger: Done");
 						//await machine.SetTriggerAsync("Done");
 					}).
-				Build.As<StateMachine>();
+				Build;
 
-			stateMachine.LogFlow.Value = true;
+			stateMachine.LogFlow = true;
 			await stateMachine.StartAsync();
 			Print.Log($"Active state: {stateMachine.ActiveStateId}");
 			Console.ReadLine();

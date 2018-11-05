@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace StateMachineNet.Utilities {
+namespace Stateful.Utilities {
 
 	[Serializable]
 	public class Lock {

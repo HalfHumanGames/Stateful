@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace StateMachineNet {
+namespace Stateful {
 
 	#region Subclasses
 
@@ -20,6 +20,8 @@ namespace StateMachineNet {
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onResume;
 		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler> onMessages =
 			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler>();
+		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<object>> onMessagesWithReturnValue =
+			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<object>>();
 
 		public State() { }
 
@@ -47,7 +49,25 @@ namespace StateMachineNet {
 
 		internal virtual void SendMessage(
 			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
-		) { if (onMessages.ContainsKey(message)) { onMessages[message].Invoke(stateMachine, this, arg); } }
+		) { 
+			if (!onMessages.ContainsKey(message)) { 
+				throw new ArgumentException($"No message with the id {message} found.");
+			}
+			onMessages[message].Invoke(stateMachine, this, arg);
+		}
+
+		internal virtual T SendMessage<T>(
+			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
+		) { 
+			if (!onMessagesWithReturnValue.ContainsKey(message)) { 
+				throw new ArgumentException($"No message with the id {message} found.");
+			} 
+			object retval = onMessagesWithReturnValue[message](stateMachine, this, arg); 
+			if (!(retval is T)) {
+				throw new ArgumentException($"Return value is not of type {typeof(T)}");
+			}
+			return (T) retval;
+		}
 
 		#endregion
 
@@ -83,9 +103,17 @@ namespace StateMachineNet {
 
 		internal State<TStateId, TParamId, TMessageId> On(
 			TMessageId message,
-			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler handler
 		) {
-			onMessages[message] = action;
+			onMessages[message] = handler;
+			return this;
+		}
+
+		internal State<TStateId, TParamId, TMessageId> On<T>(
+			TMessageId message,
+			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> handler
+		) {
+			onMessagesWithReturnValue[message] = (machine, state, data) => handler(machine, state, data);
 			return this;
 		}
 

@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>StateMachineNet</RootNamespace>
-    <AssemblyName>StateMachineNet</AssemblyName>
+    <RootNamespace>Stateful</RootNamespace>
+    <AssemblyName>Stateful</AssemblyName>
     <ApplicationIcon />
     <StartupObject />
   </PropertyGroup>

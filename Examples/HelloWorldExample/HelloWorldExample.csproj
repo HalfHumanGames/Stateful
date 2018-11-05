@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\StateMachineNet.csproj" />
+    <ProjectReference Include="..\..\src\Stateful\Stateful.csproj" />
   </ItemGroup>
 
 </Project>

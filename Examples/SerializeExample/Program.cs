@@ -1,6 +1,6 @@
 using System;
-using StateMachineNet;
-using StateMachineNet.Utilities;
+using Stateful;
+using Stateful.Utilities;
 
 namespace SerializeExample {
 
@@ -15,7 +15,7 @@ namespace SerializeExample {
 					GoTo("First").WhenTrigger("Toggle").
 				Build.As<StateMachine>();
 
-			stateMachine.LogFlow.Value = true;
+			stateMachine.LogFlow = true;
 			stateMachine.Start();
 
 			// Serialize

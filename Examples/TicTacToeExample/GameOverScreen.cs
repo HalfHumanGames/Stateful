@@ -1,5 +1,5 @@
-using StateMachineNet;
-using StateMachineNet.Utilities;
+using Stateful;
+using Stateful.Utilities;
 
 namespace TicTacToeExample {
 

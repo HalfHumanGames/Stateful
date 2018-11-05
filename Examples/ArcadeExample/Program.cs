@@ -1,4 +1,4 @@
-﻿namespace ArcadeExample {
+namespace ArcadeExample {
 
 	// Game screens
 	public enum StateId {
@@ -24,10 +24,11 @@
 		private static void Main(string[] args) {
 
 			// The constructor configures the state machine
-			Arcade arcade = new Arcade();
+			Arcade arcade = new Arcade {
 
-			// Turn on to log the state machine flow when debugging
-			arcade.LogFlow.Value = true;
+				// Turn on to log the state machine flow when debugging
+				LogFlow = true
+			};
 
 			// Start the state machine
 			arcade.Start();
