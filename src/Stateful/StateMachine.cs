@@ -1,21 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using Stateful.Utilities;
 
 namespace Stateful {
 
 	#region Subclasses
 
-	[Serializable] public class StateMachine : StateMachine<string, string, string> { }
-	[Serializable] public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
-	[Serializable] public class StateMachine<TStateId, TParamId> : StateMachine<TStateId, TParamId, string> { }
+	public class StateMachine : StateMachine<string, string, string> { }
+	public class StateMachine<TStateId> : StateMachine<TStateId, string, string> { }
+	public class StateMachine<TStateId, TParamId> : StateMachine<TStateId, TParamId, string> { }
 
 	#endregion
 
-	[Serializable]
 	public partial class StateMachine<TStateId, TParamId, TMessageId> : State<TStateId, TParamId, TMessageId> {
 
 		#region Delegate definitions
@@ -100,7 +97,7 @@ namespace Stateful {
 		#region Private variables
 
 		// Default configuration
-		private  StateMachine<TStateId, TParamId, TMessageId> config;
+		private StateMachine<TStateId, TParamId, TMessageId> configuration;
 
 		// State management
 		private TStateId initialStateId;
@@ -140,15 +137,16 @@ namespace Stateful {
 			Configure(builder.Build);
 		}
 
-		protected void Configure(StateMachine<TStateId, TParamId, TMessageId> config) {
-			if (config == null) {
+		protected void Configure(StateMachine<TStateId, TParamId, TMessageId> configuration) {
+			if (configuration == null) {
 				throw new ArgumentException("Cannot configure null.");
 			}
-			this.config = config.As<StateMachine<TStateId, TParamId, TMessageId>>();
+			this.configuration = configuration;
+			Copy(configuration);
 		}
 
 		private void Reconfigure() {
-			Copy(config);
+			Copy(configuration);
 		}
 
 		#endregion
@@ -163,7 +161,7 @@ namespace Stateful {
 			if (IsRunning) {
 				throw new InvalidOperationException("State machine is already running.");
 			}
-			if (config == null) {
+			if (configuration == null) {
 				Configure(this);
 			}
 			if (!states.ContainsKey(state)) {
@@ -541,7 +539,7 @@ namespace Stateful {
 		/// <typeparam name="TStateMachine">Type to cast to</typeparam>
 		/// <param name="args">Constructor arguments</param>
 		/// <returns>The casted state machine</returns>
-		public TStateMachine As<TStateMachine>(params object[] args) 
+		public TStateMachine As<TStateMachine>(params object[] args)
 			where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
 
 			if (IsRunning) {
@@ -554,25 +552,25 @@ namespace Stateful {
 
 		#endregion
 
-		#region Serialize/deserialize
+		//#region Serialize/deserialize
 
-		public byte[] Serialize() {
-			BinaryFormatter formatter = new BinaryFormatter();
-			using (MemoryStream stream = new MemoryStream()) {
-				formatter.Serialize(stream, this);
-				return stream.ToArray();
-			}
-		}
+		//public byte[] Serialize() {
+		//	BinaryFormatter formatter = new BinaryFormatter();
+		//	using (MemoryStream stream = new MemoryStream()) {
+		//		formatter.Serialize(stream, this);
+		//		return stream.ToArray();
+		//	}
+		//}
 
-		public void Deserialize(byte[] data) {
-			BinaryFormatter formatter = new BinaryFormatter();
-			using (MemoryStream stream = new MemoryStream(data)) {
-				object deserialized = formatter.Deserialize(stream);
-				Configure((StateMachine<TStateId, TParamId, TMessageId>) deserialized);
-			}
-		}
+		//public void Deserialize(byte[] data) {
+		//	BinaryFormatter formatter = new BinaryFormatter();
+		//	using (MemoryStream stream = new MemoryStream(data)) {
+		//		object deserialized = formatter.Deserialize(stream);
+		//		Configure((StateMachine<TStateId, TParamId, TMessageId>) deserialized);
+		//	}
+		//}
 
-		#endregion
+		//#endregion
 
 		#region Private utilities
 
@@ -588,7 +586,8 @@ namespace Stateful {
 			floats = other.floats.ToDictionary(x => x.Key, x => x.Value);
 			ints = other.ints.ToDictionary(x => x.Key, x => x.Value);
 			strings = other.strings.ToDictionary(x => x.Key, x => x.Value);
-			triggers = other.triggers.ToHashSet();
+			// Linq ToHashSet unavailable in .NET Standard 2.0
+			triggers = new HashSet<TParamId>(other.triggers);
 			observables = other.observables.ToList();
 		}
 
@@ -699,7 +698,8 @@ namespace Stateful {
 				floats = floats.Union(substate.floats).ToDictionary(x => x.Key, x => x.Value);
 				ints = ints.Union(substate.ints).ToDictionary(x => x.Key, x => x.Value);
 				strings = strings.Union(substate.strings).ToDictionary(x => x.Key, x => x.Value);
-				triggers = triggers.Union(substate.triggers).ToHashSet();
+				// Linq ToHashSet unavailable in .NET Standard 2.0
+				triggers = new HashSet<TParamId>(triggers.Union(substate.triggers));
 				observables = observables.Union(substate.observables).ToList();
 				substate.IsRunning = false;
 				substate.logFlow = logFlow;

@@ -5,7 +5,6 @@ using Stateful.Utilities;
 
 namespace Stateful {
 
-	[Serializable] 
 	internal abstract partial class Transition<TStateId, TParamId, TMessageId> {
 
 		// Parameters this transition considers
@@ -76,7 +75,6 @@ namespace Stateful {
 
 	#region Concrete transitions: GoTo, Push, and Pop
 
-	[Serializable] 
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId state;
@@ -90,7 +88,6 @@ namespace Stateful {
 			new GoToTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
-	[Serializable] 
 	internal partial class PushTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId state;
@@ -104,7 +101,6 @@ namespace Stateful {
 			new PushTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
-	[Serializable] 
 	internal partial class PopTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>

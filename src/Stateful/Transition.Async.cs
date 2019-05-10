@@ -1,3 +1,5 @@
+#if TASKS
+
 using System.Threading.Tasks;
 
 namespace Stateful {
@@ -25,3 +27,5 @@ namespace Stateful {
 			await stateMachine.PopAsync();
 	}
 }
+
+#endif

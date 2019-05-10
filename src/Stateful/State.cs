@@ -5,13 +5,12 @@ namespace Stateful {
 
 	#region Subclasses
 
-	[Serializable] public class State : State<string, string, string> { }
-	[Serializable] public class State<TStateId> : State<TStateId, string, string> { }
-	[Serializable] public class State<TStateId, TParamId> : State<TStateId, TParamId, string> { }
+	public class State : State<string, string, string> { }
+	public class State<TStateId> : State<TStateId, string, string> { }
+	public class State<TStateId, TParamId> : State<TStateId, TParamId, string> { }
 
 	#endregion
 
-	[Serializable]
 	public partial class State<TStateId, TParamId, TMessageId> {
 
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onEnter;

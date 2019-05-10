@@ -1,3 +1,8 @@
+#if TASKS
+
+#if NETSTANDARD1_0
+using Stateful.Utilities;
+#endif
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -92,6 +97,7 @@ namespace Stateful {
 			}
 			observables.ForEach(x => x.Changed -= OnObservableChanged);
 			IsRunning = false;
+			Reconfigure();
 		}
 
 		/// <summary>
@@ -378,3 +384,5 @@ namespace Stateful {
 		#endregion
 	}
 }
+
+#endif

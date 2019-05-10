@@ -1,3 +1,5 @@
+#if TASKS
+
 using System;
 using System.Threading.Tasks;
 
@@ -190,3 +192,5 @@ namespace Stateful {
 		#endregion
 	}
 }
+
+#endif

@@ -38,7 +38,7 @@ namespace Stateful.Tests {
 		MessageWithParameterAndReturnValue
 	}
 
-	public class StateMachineTests {
+	public class StatefulTests {
 
 		private IStateMachineBuilder<StateId, ParamId, MessageId> builder =>
 			StateMachineBuilder.Create<StateId, ParamId, MessageId>();
@@ -617,72 +617,88 @@ namespace Stateful.Tests {
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetString(ParamId.StringB, "Tiki"));
 		}
 
+		[Fact]
+		public void GetStateWorks() {
 
-		//[Fact]
-		//public void GetActiveStateWorks() {
+			var stateA = new State<StateId, ParamId, MessageId>();
+			var stateB = new State<StateId, ParamId, MessageId>();
 
-		//}
+			var stateMachine = builder.
+				AddState(StateId.StateA, stateA).
+				AddState(StateId.StateB, stateB).
+				Build;
 
-		//[Fact]
-		//public void GetActiveState_ReturnsNullIfNoActiveState() {
+			Assert.Equal(stateA, stateMachine.GetState(StateId.StateA));
+			Assert.Equal(stateB, stateMachine.GetState(StateId.StateB));
 
-		//}
+			Assert.Throws<ArgumentException>(() => stateMachine.GetState(StateId.StateC));
+		}
 
-		//[Fact]
-		//public void GetActiveState_ThrowsInvalidCastExceptionIfCannotCastAsT() {
+		[Fact]
+		public void SendMessageWorks() {
 
-		//}
+			string log = "";
 
-		//[Fact]
-		//public void GetStateWorks() {
+			var stateMachine = builder.
+				AddState(StateId.StateA).
+					// Without brackets, setting log also implies return log, so we
+					// add brackets to clarify which messages have no return value.
+					On(MessageId.Message, () => {
+						log = "StateA -> Message";
+					}).On(MessageId.MessageWithParameter, (machine, state, arg) => {
+						log = "StateA -> MessageWithParameter: " + arg;
+					}).On(MessageId.MessageWithReturnValue, () =>
+						"StateA -> MessageWithReturnValue"
+					).On(MessageId.MessageWithParameterAndReturnValue, (machine, state, arg) =>
+						"StateA -> MessageWithParameterAndReturnValue: " + arg
+					).
+				AddState(StateId.StateB).
+					On(MessageId.Message, () => {
+						log = "StateB -> Message";
+					}).On(MessageId.MessageWithParameter, (machine, state, arg) => {
+						log = "StateB -> MessageWithParameter: " + arg;
+					}).On(MessageId.MessageWithReturnValue, () =>
+						"StateB -> MessageWithReturnValue"
+					).On(MessageId.MessageWithParameterAndReturnValue, (machine, state, arg) =>
+						"StateB -> MessageWithParameterAndReturnValue: " + arg
+					).
+				Build;
 
-		//}
+			Assert.Throws<InvalidOperationException>(() => 
+				stateMachine.SendMessage(MessageId.Message)
+			);
 
-		//[Fact]
-		//public void GetState_ThrowsArgumentExceptionIfStateNotFound() {
+			stateMachine.Start();
+			stateMachine.SendMessage(MessageId.Message);
+			Assert.Equal("StateA -> Message", log);
+			
+			stateMachine.SendMessage(MessageId.MessageWithParameter, "Foo");
+			Assert.Equal("StateA -> MessageWithParameter: Foo", log);
 
-		//}
+			log = stateMachine.SendMessage<string>(MessageId.MessageWithReturnValue);
+			Assert.Equal("StateA -> MessageWithReturnValue", log);
 
-		//[Fact]
-		//public void GetState_ThrowsInvalidCastExceptionIfCannotCastAsT() {
+			log = stateMachine.SendMessage<string>(MessageId.MessageWithParameterAndReturnValue, "Bar");
+			Assert.Equal("StateA -> MessageWithParameterAndReturnValue: Bar", log);
 
-		//}
+			stateMachine.GoTo(StateId.StateB);
+			stateMachine.SendMessage(MessageId.Message);
+			Assert.Equal("StateB -> Message", log);
+			
+			stateMachine.SendMessage(MessageId.MessageWithParameter, "Foo");
+			Assert.Equal("StateB -> MessageWithParameter: Foo", log);
 
-		//[Fact]
-		//public void SendMessageWorks() {
+			log = stateMachine.SendMessage<string>(MessageId.MessageWithReturnValue);
+			Assert.Equal("StateB -> MessageWithReturnValue", log);
 
-		//}
+			log = stateMachine.SendMessage<string>(MessageId.MessageWithParameterAndReturnValue, "Bar");
+			Assert.Equal("StateB -> MessageWithParameterAndReturnValue: Bar", log);
 
-		//[Fact]
-		//public void SendMessageWorksWithParameter() {
+			Assert.Throws<ArgumentException>(() => stateMachine.SendMessage<string>(MessageId.Message));
+			Assert.Throws<ArgumentException>(() => stateMachine.SendMessage(MessageId.MessageWithReturnValue));
+			stateMachine.Pop();
+			Assert.Throws<InvalidOperationException>(() => stateMachine.SendMessage(MessageId.Message));
 
-		//}
-
-		//[Fact]
-		//public void SendMessageWorksWithReturnValue() {
-
-		//}
-
-		//[Fact]
-		//public void SendMessageWorksWithParameterAndReturnValue() {
-
-		//}
-
-		//[Fact]
-		//public void SendMessage_ThrowsInvalidOperationExceptionWhenNoActiveState() {
-
-		//}
-
-		//[Fact]
-		//public void SendMessage_ThrowsInvalidOperationExceptionWhenStateMachineNotRunning() {
-
-		//}
-
-		//[Fact]
-		//public void SendMessage_ThrowsArgumentExceptionWhenMessageNotFound() {
-
-		//}
-
-		// AS_WORKS (throw exception if call after running) 
+		}
 	}
 }

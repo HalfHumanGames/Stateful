@@ -1,19 +1,18 @@
-using System;
-using System.Collections.Generic;
-
 namespace Stateful.Utilities {
 
-	[Serializable]
 	public class Lock {
 
-		public bool IsLocked => locks.Count > 0;
-		private Stack<object> locks = new Stack<object>();
+		public bool IsLocked => locks > 0;
 
-		public void AddLock() => locks.Push(new object());
+		private int locks;
+
+		public void AddLock() {
+			locks++;
+		}
 
 		public void RemoveLock() {
-			if (locks.Count > 0) {
-				locks.Pop();
+			if (locks > 0) {
+				locks--;
 			}
 		}
 	}

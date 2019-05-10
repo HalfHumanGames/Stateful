@@ -1,3 +1,8 @@
+#if TASKS
+
+#if NETSTANDARD1_0 || NET45
+using Stateful.Utilities;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -112,29 +117,47 @@ namespace Stateful {
 		/// </summary>
 		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual async Task OnEnterAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			#if NETSTANDARD1_0 || NET45
+			await TaskUtility.CompletedTask;
+			#else
 			await Task.CompletedTask;
+			#endif
 
 		/// <summary>
 		/// OnExitAsync is called when exiting this state asynchronously
 		/// </summary>
 		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual async Task OnExitAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			#if NETSTANDARD1_0 || NET45
+			await TaskUtility.CompletedTask;
+			#else
 			await Task.CompletedTask;
+			#endif
 
 		/// <summary>
 		/// OnPauseAsync is called when pausing this state asynchronously
 		/// </summary>
 		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual async Task OnPauseAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			#if NETSTANDARD1_0 || NET45
+			await TaskUtility.CompletedTask;
+			#else
 			await Task.CompletedTask;
+			#endif
 
 		/// <summary>
 		/// OnResumeAsync is called when resuming this state asynchronously
 		/// </summary>
 		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual async Task OnResumeAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
+			#if NETSTANDARD1_0 || NET45
+			await TaskUtility.CompletedTask;
+			#else
 			await Task.CompletedTask;
+			#endif
 
 		#endregion
 	}
 }
+
+#endif

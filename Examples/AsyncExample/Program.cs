@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Stateful;
 using Stateful.Utilities;
@@ -9,33 +10,22 @@ namespace AsyncExample {
 
 	public class Program {
 
-		private static void Main(string[] args) => MainAsync(args).Wait();
-
-		private static async Task MainAsync(string[] args) {
+		private static void Main(string[] args) {
 
 			var stateMachine = StateMachineBuilder.Create().
-				AddState("First").
+				AddState("Enter").
 					OnEnterAsync(async (machine) => {
 						Print.Log("Getting data.");
 						string data = await GetData();
 						Print.Log($"Data: {data}");
-						await machine.SetTriggerAsync("Done");
-					}).
-					GoTo("Second").WhenTrigger("Done").
-				AddState("Second").
-					OnEnterAsync(async (machine) => {
-						Print.Log("Getting data.");
-						string data = await GetData();
-						Print.Log($"Data: {data}");
-						// TODO: Add Stop conditions
-						//Print.Log("Setting trigger: Done");
-						//await machine.SetTriggerAsync("Done");
 					}).
 				Build;
 
 			stateMachine.LogFlow = true;
-			await stateMachine.StartAsync();
-			Print.Log($"Active state: {stateMachine.ActiveStateId}");
+			stateMachine.StartAsync().ContinueWith(x => Print.Log("Done."));
+			Print.Log($"First hello");
+			Thread.Sleep(1000);
+			Print.Log($"Second hello");
 			Console.ReadLine();
 		}
 

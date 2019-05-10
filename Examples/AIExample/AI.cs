@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Stateful;
 using Stateful.Utilities;
 
@@ -30,24 +29,23 @@ namespace AIExample {
 
 		private int pathIndex;
 		private (int x, int y) spawn;
-		private List<(int x, int y)> path;
+		private (int x, int y)[] path;
 		private Observable<int> distanceFromSpawn = new Observable<int>(0);
 		private Observable<int> distanceFromPlayer = new Observable<int>(int.MaxValue);
 
-		// What happens when register observable multiple times???
-		public AI(List<(int x, int y)> path, (int x, int y) spawn, int aggro, int leash) {
+		public AI((int x, int y)[] path, (int x, int y) spawn, int aggro, int leash) {
 			this.spawn = spawn;
 			this.path = path;
 			Configure(
 				Builder.
 					AddState(StateId.Patrol).
-						On(MessageId.HandleAI, Patrol_GetNextPosition).
+						On(MessageId.HandleAI, PatrolGetNextPosition).
 					AddState(StateId.Aggro).
-						On(MessageId.HandleAI, Aggro_GetNextPosition).
+						On(MessageId.HandleAI, AggroGetNextPosition).
 						GoTo(StateId.Leash).
 							When(distanceFromSpawn, x => x >= leash).
 					AddState(StateId.Leash).
-						On(MessageId.HandleAI, Leash_GetNextPosition).
+						On(MessageId.HandleAI, LeashGetNextPosition).
 						GoTo(StateId.Patrol).
 							WhenTrigger(ParamId.DestinationReached).
 					From(StateId.Patrol, StateId.Leash).
@@ -76,7 +74,7 @@ namespace AIExample {
 			return SendMessage<(int x, int y)>(MessageId.HandleAI, context);
 		}
 
-		private (int x, int y) Patrol_GetNextPosition(
+		private (int x, int y) PatrolGetNextPosition(
 			StateMachine<StateId, ParamId, MessageId> stateMachine,
 			State<StateId, ParamId, MessageId> state,
 			object data
@@ -85,12 +83,12 @@ namespace AIExample {
 			if (context.MonsterPosition.x == path[pathIndex].x &&
 				context.MonsterPosition.y == path[pathIndex].y
 			) {
-				pathIndex = (pathIndex + 1) % path.Count;
+				pathIndex = (pathIndex + 1) % path.Length;
 			}
 			return MoveTowards(context.MonsterPosition, path[pathIndex]);
 		}
 
-		private (int x, int y) Aggro_GetNextPosition(
+		private (int x, int y) AggroGetNextPosition(
 			StateMachine<StateId, ParamId, MessageId> stateMachine,
 			State<StateId, ParamId, MessageId> state,
 			object data
@@ -99,7 +97,7 @@ namespace AIExample {
 			return MoveTowards(context.MonsterPosition, context.PlayerPosition);
 		}
 
-		private (int x, int y) Leash_GetNextPosition(
+		private (int x, int y) LeashGetNextPosition(
 			StateMachine<StateId, ParamId, MessageId> stateMachine,
 			State<StateId, ParamId, MessageId> state,
 			object data
@@ -121,8 +119,9 @@ namespace AIExample {
 			} else {
 				deltaX = 0;
 			}
-			deltaX = Math.Clamp(deltaX, -1, 1);
-			deltaY = Math.Clamp(deltaY, -1, 1);
+			// Math.Clamp not available in .NET Standard 2.0
+			deltaX = MathUtility.Clamp(deltaX, -1, 1);
+			deltaY = MathUtility.Clamp(deltaY, -1, 1);
 			monsterPosition.x += deltaX;
 			monsterPosition.y += deltaY;
 			return monsterPosition;

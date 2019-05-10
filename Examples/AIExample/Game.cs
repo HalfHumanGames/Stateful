@@ -1,35 +1,38 @@
 using System;
-using System.Collections.Generic;
 using Stateful.Utilities;
 
 namespace AIExample {
 
 	public class Game {
 
+		private const int aggroDistance = 4;
+		private const int leashDistance = 8;
+		private const int levelSize = 10;
+		private static readonly (int, int)[] pathDefinition = 
+			new (int x, int y)[] {
+				(levelSize - 1, 4),
+				(levelSize - 5, 4),
+				(levelSize - 5, 0),
+				(levelSize - 1, 0)
+			};
+
 		public bool IsRunning = true;
 		private (int x, int y) player;
 		private (int x, int y) monster;
 		private char[,] level;
-		private const int size = 10;
 		private AI ai;
 
 		public Game() {
-			level = new char[size, size];
-			player = (0, size - 1);
-			monster = (size - 1, 0);
+			level = new char[levelSize, levelSize];
+			player = (0, levelSize - 1);
+			monster = (levelSize - 1, 0);
 			level[player.x, player.y] = 'P';
 			level[monster.x, monster.y] = 'M';
 			ai = new AI(
-				// path definition
-				new List<(int x, int y)>() {
-					(size - 1, 4),
-					(size - 5, 4),
-					(size - 5, 0),
-					(size - 1, 0)
-				},
+				pathDefinition,
 				monster,
-				4, // aggro distance 
-				8  // leash distance
+				aggroDistance,
+				leashDistance
 			);
 			ai.Start();
 		}
@@ -44,8 +47,8 @@ namespace AIExample {
 			string gui = "\n__________STAY ALIVE!_________\n\n        WASD to move.\n\n";
 
 			// level and entities
-			for (int y = size - 1; y >= 0; y--) {
-				for (int x = 0; x < size; x++) {
+			for (int y = levelSize - 1; y >= 0; y--) {
+				for (int x = 0; x < levelSize; x++) {
 					gui += $"[{level[x, y]}]";
 				}
 				gui += "\n";
@@ -80,11 +83,14 @@ namespace AIExample {
 			}
 			Move(ref player, (x, y), 'P');
 		}
+
+		private void HandleMonsterMovement() => Move(ref monster, ai.HandleAI(player, monster), 'M');
 		
 		// Absolute movement
 		private void Move(ref (int x, int y) entity, (int x, int y) target, char character) {
-			target.x = Math.Clamp(target.x, 0, level.GetLength(0) - 1);
-			target.y = Math.Clamp(target.y, 0, level.GetLength(0) - 1);
+			// Math.Clamp not available in .NET Standard 2.0
+			target.x = MathUtility.Clamp(target.x, 0, level.GetLength(0) - 1);
+			target.y = MathUtility.Clamp(target.y, 0, level.GetLength(0) - 1);
 			if (level[target.x, target.y] == '\0') {
 				level[entity.x, entity.y] = '\0';
 				entity.x = target.x;
@@ -92,7 +98,5 @@ namespace AIExample {
 				level[entity.x, entity.y] = character;
 			}
 		}
-
-		private void HandleMonsterMovement() => Move(ref monster, ai.HandleAI(player, monster), 'M');
 	}
 }

@@ -7,7 +7,6 @@ namespace Stateful.Utilities {
 		event Action<IObservable> Changed;
 	}
 
-	[Serializable] 
 	public class Observable<T> : IObservable {
 
 		public delegate void ValueChangedHandler(Observable<T> observable, T previousValue, T newValue);
