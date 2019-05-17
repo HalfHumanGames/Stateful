@@ -175,7 +175,9 @@ namespace Stateful {
 		/// <summary>
 		/// Starts the state machine using the first state added during configuration
 		/// </summary>
-		public void Start() => Start(initialStateId);
+		public void Start() {
+			Start(initialStateId);
+		}
 
 		private void OnObservableChanged(IObservable observable) {
 			int hashCode = observable.GetHashCode();
@@ -439,15 +441,18 @@ namespace Stateful {
 		/// </summary>
 		/// <typeparam name="T">The state type</typeparam>
 		/// <returns>Returns the active state as the specified type</returns>
-		public T GetActiveState<T>() where T : State<TStateId, TParamId, TMessageId> => (T) ActiveState;
+		public T GetActiveState<T>() where T : State<TStateId, TParamId, TMessageId> {
+			return (T) ActiveState;
+		}
 
 		/// <summary>
 		/// Gets a state by state id
 		/// </summary>
 		/// <param name="state">State id of state to get</param>
 		/// <returns>State</returns>
-		public State<TStateId, TParamId, TMessageId> GetState(TStateId state) =>
-			GetState<State<TStateId, TParamId, TMessageId>>(state);
+		public State<TStateId, TParamId, TMessageId> GetState(TStateId state) {
+			return GetState<State<TStateId, TParamId, TMessageId>>(state);
+		}
 
 		/// <summary>
 		/// Gets a state by state id, but casted as the specified type
@@ -471,31 +476,41 @@ namespace Stateful {
 		/// </summary>
 		/// <param name="param">Parameter id</param>
 		/// <returns>Value</returns>
-		public bool GetBool(TParamId param) => !bools.ContainsKey(param) ? false : bools[param];
+		public bool GetBool(TParamId param) {
+			return !bools.ContainsKey(param) ? false : bools[param];
+		}
 
 		/// <summary>
 		/// Gets a float parameter value
 		/// </summary>
 		/// <param name="param">Parameter id</param>
 		/// <returns>Value</returns>
-		public float GetFloat(TParamId param) => !floats.ContainsKey(param) ? 0 : floats[param];
+		public float GetFloat(TParamId param) {
+			return !floats.ContainsKey(param) ? 0 : floats[param];
+		}
 
 		/// <summary>
 		/// Gets an int parameter value
 		/// </summary>
 		/// <param name="param">Parameter id</param>
 		/// <returns>Value</returns>
-		public int GetInt(TParamId param) => !ints.ContainsKey(param) ? 0 : ints[param];
+		public int GetInt(TParamId param) {
+			return !ints.ContainsKey(param) ? 0 : ints[param];
+		}
 
 		/// <summary>
 		/// Gets a string parameter value
 		/// </summary>
 		/// <param name="param">Parameter id</param>
 		/// <returns>Value</returns>
-		public string GetString(TParamId param) => !strings.ContainsKey(param) ? null : strings[param];
+		public string GetString(TParamId param) {
+			return !strings.ContainsKey(param) ? null : strings[param];
+		}
 
 		// Used by transitions
-		internal bool GetTrigger(TParamId param) => triggers.Contains(param);
+		internal bool GetTrigger(TParamId param) {
+			return triggers.Contains(param);
+		}
 
 		#endregion
 
@@ -716,8 +731,9 @@ namespace Stateful {
 			transitions[stateId].Add(transition);
 		}
 
-		internal void AddObservable<T>(Observable<T> observable, Func<T, bool> check) =>
+		internal void AddObservable<T>(Observable<T> observable, Func<T, bool> check) {
 			observables.Add(observable);
+		}
 
 		#endregion
 	}
