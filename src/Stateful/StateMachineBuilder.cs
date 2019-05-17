@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Stateful.Utilities;
 
 namespace Stateful {
@@ -13,7 +15,7 @@ namespace Stateful {
 		/// Creates a new state machine builder with string ids for both states and params
 		/// </summary>
 		/// <returns></returns>
-		public static IStateMachineBuilder<string, string, string> Create() =>
+		public static IAddStateAddSetParam<string, string, string> Create() =>
 			new StateMachineBuilder();
 
 		/// <summary>
@@ -21,7 +23,7 @@ namespace Stateful {
 		/// </summary>
 		/// <typeparam name="TStateId">The type used to identify states</typeparam>
 		/// <returns></returns>
-		public static IStateMachineBuilder<TStateId, string, string> Create<TStateId>() =>
+		public static IAddStateAddSetParam<TStateId, string, string> Create<TStateId>() =>
 			new StateMachineBuilder<TStateId, string, string>();
 
 		/// <summary>
@@ -30,7 +32,7 @@ namespace Stateful {
 		/// <typeparam name="TStateId">The type used to identify states</typeparam>
 		/// <typeparam name="TParamId">The type used to identify params</typeparam>
 		/// <returns></returns>
-		public static IStateMachineBuilder<TStateId, TParamId, string> Create<TStateId, TParamId>() =>
+		public static IAddStateAddSetParam<TStateId, TParamId, string> Create<TStateId, TParamId>() =>
 			new StateMachineBuilder<TStateId, TParamId, string>();
 
 		/// <summary>
@@ -39,16 +41,15 @@ namespace Stateful {
 		/// <typeparam name="TStateId">The type used to identify states</typeparam>
 		/// <typeparam name="TParamId">The type used to identify params</typeparam>
 		/// <returns></returns>
-		public static IStateMachineBuilder<TStateId, TParamId, TMessageId> Create<TStateId, TParamId, TMessageId>() =>
+		public static IAddStateAddSetParam<TStateId, TParamId, TMessageId> Create<TStateId, TParamId, TMessageId>() =>
 			new StateMachineBuilder<TStateId, TParamId, TMessageId>();
 
 		#endregion
 	}
 
 	public partial class StateMachineBuilder<TStateId, TParamId, TMessageId> :
-		IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> {
+		IStateMachineBuilder<TStateId, TParamId, TMessageId> {
 
-		private bool isGlobalTransition;
 		private TStateId[] statesToAddTransitionsTo;
 		private Transition<TStateId, TParamId, TMessageId> mostRecentlyAddedTransition;
 
@@ -56,27 +57,27 @@ namespace Stateful {
 
 		#region Set default parameter values
 
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> SetBool(TParamId param, bool value) {
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetBool(TParamId param, bool value) {
 			Build.SetBool(param, value);
 			return this;
 		}
 
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> SetFloat(TParamId param, float value) {
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetFloat(TParamId param, float value) {
 			Build.SetFloat(param, value);
 			return this;
 		}
 
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> SetInt(TParamId param, int value) {
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetInt(TParamId param, int value) {
 			Build.SetInt(param, value);
 			return this;
 		}
 
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> SetString(TParamId param, string value) {
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetString(TParamId param, string value) {
 			Build.SetString(param, value);
 			return this;
 		}
 
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> SetTrigger(TParamId param) {
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetTrigger(TParamId param) {
 			Build.SetTrigger(param);
 			return this;
 		}
@@ -85,29 +86,32 @@ namespace Stateful {
 
 		#region Add states or transition sources
 
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(TStateId name) =>
+			AddState(name, new State<TStateId, TParamId, TMessageId>());
+
 		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
 			TStateId name, State<TStateId, TParamId, TMessageId> state
 		) {
-			isGlobalTransition = false;
 			statesToAddTransitionsTo = new TStateId[] { name };
 			Build.AddState(name, state);
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(TStateId name) =>
-			AddState(name, new State<TStateId, TParamId, TMessageId>());
-
-		public IAddTransition<TStateId, TParamId, TMessageId> From(params TStateId[] states) {
-			isGlobalTransition = false;
-			statesToAddTransitionsTo = states;
-			return this;
-		}
-
-		public IAddTransition<TStateId, TParamId, TMessageId> FromAny {
+		public IAddTransitionAddExcept<TStateId, TParamId, TMessageId> FromAny {
 			get {
-				isGlobalTransition = true;
+				From(Build.StateIds);
 				return this;
 			}
+		}
+
+		public IAddTransition<TStateId, TParamId, TMessageId> Except(params TStateId[] states) {
+			From(Build.StateIds.Except(states).ToArray());
+			return this;
+		}
+	
+		public IAddTransition<TStateId, TParamId, TMessageId> From(params TStateId[] states) {
+			statesToAddTransitionsTo = states;
+			return this;
 		}
 
 		#endregion
@@ -270,12 +274,8 @@ namespace Stateful {
 		}
 
 		private void AddTransition(Transition<TStateId, TParamId, TMessageId> transition) {
-			if (isGlobalTransition) {
-				Build.AddGlobalTransition(transition);
-			} else {
-				foreach (TStateId state in statesToAddTransitionsTo) {
-					Build.AddTransition(state, transition);
-				}
+			foreach (TStateId state in statesToAddTransitionsTo) {
+				Build.AddTransition(state, transition);
 			}
 			mostRecentlyAddedTransition = transition;
 		}
@@ -336,7 +336,7 @@ namespace Stateful {
 
 		#endregion
 
-		public StateMachine<TStateId, TParamId, TMessageId> Build { get; } = 
-			new StateMachine<TStateId, TParamId, TMessageId>();
+		public StateMachine<TStateId, TParamId, TMessageId> Build { get; private set; }
+			= new StateMachine<TStateId, TParamId, TMessageId>();
 	}
 }

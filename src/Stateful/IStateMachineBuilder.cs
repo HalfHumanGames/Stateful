@@ -4,12 +4,13 @@ using Stateful.Utilities;
 namespace Stateful {
 
 	// Implemented by StateMachineBuilder
-	public interface IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> : 
-		IStateMachineBuilder<TStateId, TParamId, TMessageId>, 
-		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> { }
+	public interface IStateMachineBuilder<TStateId, TParamId, TMessageId> : 
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId>,
+		IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId>,
+		IAddTransitionAddExcept<TStateId, TParamId, TMessageId> { }
 
 	// Initializer
-	public interface IStateMachineBuilder<TStateId, TParamId, TMessageId> : IAddState<TStateId, TParamId, TMessageId> {
+	public interface IAddStateAddSetParam<TStateId, TParamId, TMessageId> : IAddState<TStateId, TParamId, TMessageId> {
 		
 		/// <summary>
 		/// Sets the value of a bool parameter
@@ -17,7 +18,7 @@ namespace Stateful {
 		/// <param name="param">Parameter id</param>
 		/// <param name="value">Value</param>
 		/// <returns>Returns a fluent interface</returns>
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> SetBool(TParamId param, bool value);
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetBool(TParamId param, bool value);
 		
 		/// <summary>
 		/// Sets the value of a float parameter
@@ -25,7 +26,7 @@ namespace Stateful {
 		/// <param name="param">Parameter id</param>
 		/// <param name="value">Value</param>
 		/// <returns>Returns a fluent interface</returns>
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> SetFloat(TParamId param, float value);
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetFloat(TParamId param, float value);
 		
 		/// <summary>
 		/// Sets the value of an int parameter
@@ -33,7 +34,7 @@ namespace Stateful {
 		/// <param name="param">Parameter id</param>
 		/// <param name="value">Value</param>
 		/// <returns>Returns a fluent interface</returns>
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> SetInt(TParamId param, int value);
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetInt(TParamId param, int value);
 		
 		/// <summary>
 		/// Sets the value of a string parameter
@@ -41,14 +42,14 @@ namespace Stateful {
 		/// <param name="param">Parameter id</param>
 		/// <param name="value">Value</param>
 		/// <returns>Returns a fluent interface</returns>
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> SetString(TParamId param, string value);
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetString(TParamId param, string value);
 		
 		/// <summary>
 		/// Sets a trigger parameter
 		/// </summary>
 		/// <param name="param">Parameter id</param>
 		/// <returns>Returns a fluent interface</returns>
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> SetTrigger(TParamId param);
+		IAddStateAddSetParam<TStateId, TParamId, TMessageId> SetTrigger(TParamId param);
 	}
 
 	public interface IAddState<TStateId, TParamId, TMessageId> {
@@ -93,6 +94,15 @@ namespace Stateful {
 		IAddCondition<TStateId, TParamId, TMessageId> Pop { get; }
 	}
 
+	public partial interface IAddTransitionAddExcept<TStateId, TParamId, TMessageId> : 
+		IAddTransition<TStateId, TParamId, TMessageId> {
+
+		/// <summary>
+		/// Specifies which states to exlude from a FromAny transition
+		/// </summary>
+		/// <param name="states">State ids to exclude</param>
+		IAddTransition<TStateId, TParamId, TMessageId> Except(params TStateId[] states);
+	}
 
 	public partial interface IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> : 
 		IAddTransition<TStateId, TParamId, TMessageId>, IAddState<TStateId, TParamId, TMessageId> {
@@ -291,7 +301,7 @@ namespace Stateful {
 		/// <summary>
 		/// Specifies that the next transition is global and can occur from any state
 		/// </summary>
-		IAddTransition<TStateId, TParamId, TMessageId> FromAny { get; }
+		IAddTransitionAddExcept<TStateId, TParamId, TMessageId> FromAny { get; }
 
 		/// <summary>
 		/// Returns the created state machine as the base state machine class

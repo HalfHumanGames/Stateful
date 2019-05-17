@@ -40,7 +40,7 @@ namespace Stateful.Tests {
 
 	public class StatefulTests {
 
-		private IStateMachineBuilder<StateId, ParamId, MessageId> builder =>
+		private IAddStateAddSetParam<StateId, ParamId, MessageId> builder =>
 			StateMachineBuilder.Create<StateId, ParamId, MessageId>();
 
 		[Fact]

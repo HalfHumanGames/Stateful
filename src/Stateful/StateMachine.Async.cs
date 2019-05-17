@@ -39,7 +39,6 @@ namespace Stateful {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
 					parent = parent.ParentState;
-					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
 			await base.EnterAsync(stateMachine);

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Stateful {
 
-	public partial class StateMachineBuilder<TStateId, TParamId, TMessageId> : IStateMachineBuilderFluentInterface<TStateId, TParamId, TMessageId> {
+	public partial class StateMachineBuilder<TStateId, TParamId, TMessageId> : IStateMachineBuilder<TStateId, TParamId, TMessageId> {
 	
 		#region Add handlers
 

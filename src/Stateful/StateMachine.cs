@@ -41,7 +41,7 @@ namespace Stateful {
 		/// <summary>
 		/// Creates a new builder for this state machine
 		/// </summary>
-		public IStateMachineBuilder<TStateId, TParamId, TMessageId> Builder =>
+		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> Builder =>
 			StateMachineBuilder.Create<TStateId, TParamId, TMessageId>();
 
 		/// <summary>
@@ -92,6 +92,8 @@ namespace Stateful {
 		/// </summary>
 		public State<TStateId, TParamId, TMessageId> ActiveState => activeStates.Count > 0 ? states[ActiveStateId] : null;
 
+		public TStateId[] StateIds => states?.Keys.ToArray();
+
 		#endregion
 
 		#region Private variables
@@ -110,12 +112,8 @@ namespace Stateful {
 		private Lock transitionLock = new Lock();
 		private Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>> transitions =
 			new Dictionary<TStateId, List<Transition<TStateId, TParamId, TMessageId>>>();
-		private List<Transition<TStateId, TParamId, TMessageId>> globalTransitions =
-			new List<Transition<TStateId, TParamId, TMessageId>>();
 		private List<Transition<TStateId, TParamId, TMessageId>> activeTransitions =>
-			transitions.ContainsKey(ActiveStateId) ?
-				globalTransitions.Concat(transitions[ActiveStateId]).ToList() :
-				globalTransitions;
+			transitions.ContainsKey(ActiveStateId) ? transitions[ActiveStateId] : null;
 		private bool canEvaluateTransitions => IsRunning && !transitionLock.IsLocked && activeStates.Count > 0;
 
 		// Parameter management
@@ -580,7 +578,6 @@ namespace Stateful {
 			initialStateId = other.initialStateId;
 			hasSetInitialStateId = other.hasSetInitialStateId;
 			states = other.states.ToDictionary(x => x.Key, x => x.Value);
-			globalTransitions = other.globalTransitions.ToList();
 			transitions = other.transitions.ToDictionary(x => x.Key, x => x.Value);
 			bools = other.bools.ToDictionary(x => x.Key, x => x.Value);
 			floats = other.floats.ToDictionary(x => x.Key, x => x.Value);
@@ -659,7 +656,6 @@ namespace Stateful {
 				StateMachine<TStateId, TParamId, TMessageId> parent = this;
 				do {
 					parent = parent.ParentState;
-					globalTransitions.AddRange(parent.globalTransitions);
 				} while (parent.IsSubstate);
 			}
 			base.Enter(stateMachine);
@@ -719,9 +715,6 @@ namespace Stateful {
 			}
 			transitions[stateId].Add(transition);
 		}
-
-		internal void AddGlobalTransition(Transition<TStateId, TParamId, TMessageId> transition) =>
-			globalTransitions.Add(transition);
 
 		internal void AddObservable<T>(Observable<T> observable, Func<T, bool> check) =>
 			observables.Add(observable);
