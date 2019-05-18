@@ -44,19 +44,23 @@ namespace Stateful {
 		public IAddStateAddSetParam<TStateId, TParamId, TMessageId> Builder =>
 			StateMachineBuilder.Create<TStateId, TParamId, TMessageId>();
 
-		/// <summary>
-		/// Checks if the state machine is running
-		/// </summary>
+		private bool isRunning;
 		public bool IsRunning {
-			get;
-			private set;
+			get => isRunning;
+			protected set {
+				Print.Error("IsRunning: " + value + " | IsSubstate: " + IsSubstate);
+				isRunning = value;
+			}
 		}
 
 		/// <summary>
 		/// Enables or disables logging the state machine flow
 		/// </summary>
-		public bool LogFlow { get => logFlow.Value; set => logFlow.Value = value; }
-		private Ref<bool> logFlow = new Ref<bool>(false);
+		public bool LogFlow {
+			get => IsSubstate ? ParentState.LogFlow : logFlow;
+			set => logFlow = value; 
+		}
+		private bool logFlow;
 
 		/// <summary>
 		/// Gets the parent state if this is a substate machine or null if otherwise
@@ -132,14 +136,11 @@ namespace Stateful {
 			if (builder == null) {
 				throw new ArgumentException("Cannot configure null.");
 			}
-			Configure(builder.Build);
+			Configure(builder.Build());
 		}
 
 		protected void Configure(StateMachine<TStateId, TParamId, TMessageId> configuration) {
-			if (configuration == null) {
-				throw new ArgumentException("Cannot configure null.");
-			}
-			this.configuration = configuration;
+			this.configuration = configuration ?? throw new ArgumentException("Cannot configure null.");
 			Copy(configuration);
 		}
 
@@ -165,6 +166,10 @@ namespace Stateful {
 			if (!states.ContainsKey(state)) {
 				throw new ArgumentException($"State {state} not found.");
 			}
+			states. // Set parent on start since builder sets to configuration parent
+				Where(x => x.Value is StateMachine<TStateId, TParamId, TMessageId>).
+				Select(x => x.Value as StateMachine<TStateId, TParamId, TMessageId>).
+				ForEach(x => x.ParentState = this);
 			Log("Starting state machine.");
 			IsRunning = true;
 			observables.ForEach(x => x.Changed += OnObservableChanged);
@@ -588,7 +593,7 @@ namespace Stateful {
 		#region Private utilities
 
 		private void Copy(StateMachine<TStateId, TParamId, TMessageId> other) {
-			logFlow.Value = other.logFlow.Value;
+			//logFlow = other.logFlow;
 			IsRunning = other.IsRunning;
 			initialStateId = other.initialStateId;
 			hasSetInitialStateId = other.hasSetInitialStateId;
@@ -648,6 +653,7 @@ namespace Stateful {
 				bool success = transition.EvaluateTransition(this);
 				if (success) {
 					Log("Valid transition found.");
+					triggers.Clear();
 					transition.DoTransition(this);
 					return;
 				}
@@ -656,7 +662,7 @@ namespace Stateful {
 		}
 
 		private void Log(string message) {
-			if (!logFlow.Value) {
+			if (!LogFlow) {
 				return;
 			}
 			Print.Info(message);
@@ -667,12 +673,12 @@ namespace Stateful {
 		#region State method overrides
 
 		internal override void Enter(StateMachine<TStateId, TParamId, TMessageId> stateMachine) {
-			if (IsSubstate) {
-				StateMachine<TStateId, TParamId, TMessageId> parent = this;
-				do {
-					parent = parent.ParentState;
-				} while (parent.IsSubstate);
-			}
+			//if (IsSubstate) {
+			//	StateMachine<TStateId, TParamId, TMessageId> parent = this;
+			//	do {
+			//		parent = parent.ParentState;
+			//	} while (parent.IsSubstate);
+			//}
 			base.Enter(stateMachine);
 			Start();
 		}
@@ -703,7 +709,6 @@ namespace Stateful {
 				initialStateId = stateId;
 			}
 			if (state is StateMachine<TStateId, TParamId, TMessageId> substate) {
-				substate.ParentState = this;
 				transitions = transitions.Union(substate.transitions).ToDictionary(x => x.Key, x => x.Value);
 				bools = bools.Union(substate.bools).ToDictionary(x => x.Key, x => x.Value);
 				floats = floats.Union(substate.floats).ToDictionary(x => x.Key, x => x.Value);

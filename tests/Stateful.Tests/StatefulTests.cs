@@ -48,7 +48,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.False(stateMachine.IsRunning);
 
@@ -64,11 +64,11 @@ namespace Stateful.Tests {
 
 			var substateMachine = builder.
 				AddState(StateId.StateB).
-				Build;
+				Build();
 
 			var stateMachine = builder.
 				AddState(StateId.StateA, substateMachine).
-				Build;
+				Build();
 
 			Assert.False(substateMachine.IsRunning);
 
@@ -89,7 +89,7 @@ namespace Stateful.Tests {
 				var stateMachine = builder.
 					AddState(StateId.StateA).
 					AddState(StateId.StateB).
-					Build;
+					Build();
 
 				stateMachine.Start();
 				Assert.True(string.IsNullOrEmpty(stringWriter.ToString()));
@@ -110,11 +110,11 @@ namespace Stateful.Tests {
 				var substateMachine = builder.
 					AddState(StateId.StateB).
 					AddState(StateId.StateC).
-					Build;
+					Build();
 
 				var stateMachine = builder.
 					AddState(StateId.StateA, substateMachine).
-					Build;
+					Build();
 
 				stateMachine.Start();
 				Assert.True(string.IsNullOrEmpty(stringWriter.ToString()));
@@ -130,11 +130,11 @@ namespace Stateful.Tests {
 
 			var substateMachine = builder.
 				AddState(StateId.StateB).
-				Build;
+				Build();
 
 			var stateMachine = builder.
 				AddState(StateId.StateA, substateMachine).
-				Build;
+				Build();
 
 			Assert.Null(stateMachine.ParentState);
 
@@ -147,7 +147,7 @@ namespace Stateful.Tests {
 			var stateMachine = builder.
 				AddState(StateId.StateA).
 				AddState(StateId.StateB).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => stateMachine.ActiveStateId);
 
@@ -170,7 +170,7 @@ namespace Stateful.Tests {
 			var stateMachine = builder.
 				AddState(StateId.StateA, stateA).
 				AddState(StateId.StateB, stateB).
-				Build;
+				Build();
 
 			Assert.Null(stateMachine.ActiveState);
 
@@ -190,7 +190,7 @@ namespace Stateful.Tests {
 			var stateMachine = builder.
 				AddState(StateId.StateA).
 				AddState(StateId.StateB).
-				Build;
+				Build();
 
 			stateMachine.Start();
 			Assert.Equal(StateId.StateA, stateMachine.ActiveStateId);
@@ -209,7 +209,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => stateMachine.Stop());
 
@@ -223,12 +223,12 @@ namespace Stateful.Tests {
 
 			var substateMachine = builder.
 				AddState(StateId.StateC).
-				Build;
+				Build();
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
 				AddState(StateId.StateB, substateMachine).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => stateMachine.GoTo(StateId.StateB));
 
@@ -249,13 +249,13 @@ namespace Stateful.Tests {
 
 			var substateMachine = builder.
 				AddState(StateId.StateC).
-				Build;
+				Build();
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
 				AddState(StateId.StateB, substateMachine).
 				AddState(StateId.StateD).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => stateMachine.Push(StateId.StateB));
 
@@ -280,13 +280,13 @@ namespace Stateful.Tests {
 
 			var substateMachine = builder.
 				AddState(StateId.StateD).
-				Build;
+				Build();
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
 				AddState(StateId.StateB).
 				AddState(StateId.StateC, substateMachine).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => stateMachine.Pop());
 
@@ -323,7 +323,7 @@ namespace Stateful.Tests {
 					GoTo(StateId.StateA).
 						WhenBool(ParamId.BoolA, x => !x).
 						WhenBool(ParamId.BoolB, x => x).
-				Build;
+				Build();
 
 
 			stateMachine.Start();
@@ -351,7 +351,7 @@ namespace Stateful.Tests {
 					GoTo(StateId.StateA).
 						WhenFloat(ParamId.FloatA, x => x < 0).
 						WhenFloat(ParamId.FloatB, x => x > 1.75f).
-				Build;
+				Build();
 
 			stateMachine.Start();
 			Assert.Equal(StateId.StateA, stateMachine.ActiveStateId);
@@ -384,7 +384,7 @@ namespace Stateful.Tests {
 					GoTo(StateId.StateA).
 						WhenInt(ParamId.IntA, x => x < 0).
 						WhenInt(ParamId.IntB, x => x > 3).
-				Build;
+				Build();
 
 			stateMachine.Start();
 			Assert.Equal(StateId.StateA, stateMachine.ActiveStateId);
@@ -414,7 +414,7 @@ namespace Stateful.Tests {
 					GoTo(StateId.StateA).
 						WhenString(ParamId.StringA, x => x.CompareTo("Foo") > 0).
 						WhenString(ParamId.StringB, x => string.IsNullOrEmpty(x)).
-				Build;
+				Build();
 
 			stateMachine.Start();
 			Assert.Equal(StateId.StateA, stateMachine.ActiveStateId);
@@ -447,7 +447,7 @@ namespace Stateful.Tests {
 					GoTo(StateId.StateA).
 						When(observableInt, x => x < 0).
 						When(observableBool, x => !x).
-				Build;
+				Build();
 
 			stateMachine.Start();
 			Assert.Equal(StateId.StateA, stateMachine.ActiveStateId);
@@ -470,7 +470,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.False(stateMachine.GetBool(ParamId.BoolA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetBool(ParamId.BoolA, true));
@@ -503,7 +503,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.Equal(0, stateMachine.GetFloat(ParamId.FloatA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetFloat(ParamId.FloatA, 1.5f));
@@ -543,7 +543,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.Equal(0, stateMachine.GetInt(ParamId.IntA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetInt(ParamId.IntA, 1));
@@ -583,7 +583,7 @@ namespace Stateful.Tests {
 
 			var stateMachine = builder.
 				AddState(StateId.StateA).
-				Build;
+				Build();
 
 			Assert.Null(stateMachine.GetString(ParamId.StringA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetString(ParamId.StringA, "Foo"));
@@ -626,7 +626,7 @@ namespace Stateful.Tests {
 			var stateMachine = builder.
 				AddState(StateId.StateA, stateA).
 				AddState(StateId.StateB, stateB).
-				Build;
+				Build();
 
 			Assert.Equal(stateA, stateMachine.GetState(StateId.StateA));
 			Assert.Equal(stateB, stateMachine.GetState(StateId.StateB));
@@ -662,7 +662,7 @@ namespace Stateful.Tests {
 					).On(MessageId.MessageWithParameterAndReturnValue, (machine, state, arg) =>
 						"StateB -> MessageWithParameterAndReturnValue: " + arg
 					).
-				Build;
+				Build();
 
 			Assert.Throws<InvalidOperationException>(() => 
 				stateMachine.SendMessage(MessageId.Message)

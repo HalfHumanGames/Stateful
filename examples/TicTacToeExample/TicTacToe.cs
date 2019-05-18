@@ -28,15 +28,15 @@ namespace TicTacToeExample {
 								WhenTrigger(ParamId.EndTurn).
 						AddState(StateId.GameScreen_GameOver, new GameOverScreen()).
 						From(StateId.GameScreen_Player1Turn, StateId.GameScreen_Player2Turn).
-							GoTo(StateId.GameScreen_GameOver). // You could do when GameStatus !InProgress
+							GoTo(StateId.GameScreen_GameOver). // You could also do when GameStatus !InProgress
 								WhenInt(ParamId.GameStatus, x => x == (int) GameStatus.Player1Won).
 								Or.WhenInt(ParamId.GameStatus, x => x == (int) GameStatus.Player2Won).
 								Or.WhenInt(ParamId.GameStatus, x => x == (int) GameStatus.Draw).
 						FromAny. // From and FromAny prevent us from having to rewrite code
 							GoTo(StateId.StartScreen).
 								WhenTrigger(ParamId.GoToStartScreen).
-					Build.As<GameScreen>() // We have to specify the substate machine type
-				) // Building and casting (As) are optional for the root state machine
+						Build<GameScreen>() // Optionally specify the substate machine type
+				)
 			);
 		}
 

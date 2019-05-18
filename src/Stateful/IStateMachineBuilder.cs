@@ -63,7 +63,17 @@ namespace Stateful {
 		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
 			TStateId name, State<TStateId, TParamId, TMessageId> state
 		);
-		
+
+		/// <summary>
+		/// Adds a new state to the state machine
+		/// </summary>
+		/// <param name="name">State id</param>
+		/// <param name="state">State</param>
+		/// <returns>Returns a fluent interface</returns>
+		IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
+			TStateId name, IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> builder
+		);
+
 		/// <summary>
 		/// Adds a new base state to the state machine
 		/// </summary>
@@ -306,7 +316,9 @@ namespace Stateful {
 		/// <summary>
 		/// Returns the created state machine as the base state machine class
 		/// </summary>
-		StateMachine<TStateId, TParamId, TMessageId> Build { get; } // Finalizer
+		StateMachine<TStateId, TParamId, TMessageId> Build(); // Finalizer
+
+		TStateMachine Build<TStateMachine>() where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new();
 	}
 
 	public interface IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> : 

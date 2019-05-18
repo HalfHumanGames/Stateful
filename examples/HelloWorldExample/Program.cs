@@ -14,7 +14,7 @@ namespace HelloWorldExample {
 			StateMachine stateMachine = StateMachineBuilder.Create().
 				AddState("Hello, world!").GoTo("Goodbye, world!").WhenTrigger("Toggle state").
 				AddState("Goodbye, world!").GoTo("Hello, world!").WhenTrigger("Toggle state").
-				Build.As<StateMachine>();
+				Build().As<StateMachine>();
 
 			// Enable logging so you can see what goes on inside the state machine
 			stateMachine.LogFlow = true;

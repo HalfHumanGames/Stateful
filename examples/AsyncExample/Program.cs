@@ -19,7 +19,7 @@ namespace AsyncExample {
 						string data = await GetData();
 						Print.Log($"Data: {data}");
 					}).
-				Build;
+				Build();
 
 			stateMachine.LogFlow = true;
 			stateMachine.StartAsync().ContinueWith(x => Print.Log("Done."));
