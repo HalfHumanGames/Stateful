@@ -1,17 +1,16 @@
-using System;
-
 namespace Stateful.Utilities {
 
-	public interface IObservable {
+	public delegate void ValueChangedHandler<T>(Observable<T> observable, T previousValue, T newValue);
+	public delegate void ChangedHandler(INotifyChanged observable);
 
-		event Action<IObservable> Changed;
+	public interface INotifyChanged {
+		event ChangedHandler Changed;
 	}
 
-	public class Observable<T> : IObservable {
+	public class Observable<T> : INotifyChanged {
 
-		public delegate void ValueChangedHandler(Observable<T> observable, T previousValue, T newValue);
-		public event ValueChangedHandler ValueChanged;
-		public event Action<IObservable> Changed;
+		public event ChangedHandler Changed;
+		public event ValueChangedHandler<T> ValueChanged;
 
 		private T value;
 		public T Value {
@@ -22,12 +21,14 @@ namespace Stateful.Utilities {
 				}
 				T temp = this.value;
 				this.value = value;
+				Changed?.Invoke((INotifyChanged) this);
 				ValueChanged?.Invoke(this, temp, this.value);
-				Changed?.Invoke(this);
 			}
 		}
 
 		public Observable() { }
-		public Observable(T value) => this.value = value;
+		public Observable(T value) {
+			this.value = value;
+		}
 	}
 }

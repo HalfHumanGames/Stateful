@@ -5,7 +5,7 @@ namespace Stateful.Utilities {
 
 	public static class Print {
 
-		#if NETSTANDARD1_0
+#if NETSTANDARD1_0
 		public enum ConsoleColor { 
 			Yellow,
 			Red,
@@ -13,7 +13,7 @@ namespace Stateful.Utilities {
 			Green,
 			Gray
 		}
-		#endif
+#endif
 		private const ConsoleColor warningColor = ConsoleColor.Yellow;
 		private const ConsoleColor errorColor = ConsoleColor.Red;
 		private const ConsoleColor infoColor = ConsoleColor.Cyan;
@@ -27,13 +27,13 @@ namespace Stateful.Utilities {
 		public static void Log(object text) => Line(text, defaultColor);
 
 		private static void Line(object text, ConsoleColor colour = defaultColor) {
-			#if !NETSTANDARD1_0
+#if !NETSTANDARD1_0
 			ConsoleColor originalColor = Console.ForegroundColor;
 			Console.ForegroundColor = colour;
 			Console.WriteLine(text.ToString());
 			Console.ForegroundColor = originalColor;
 			Trace.WriteLine(text.ToString());
-			#endif
+#endif
 			Debug.WriteLine(text.ToString());
 		}
 	}

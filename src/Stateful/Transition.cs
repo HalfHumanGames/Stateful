@@ -11,14 +11,10 @@ namespace Stateful {
 		private HashSet<int> paramHashCodes = new HashSet<int>();
 
 		// Parameter checks
-		private List<Tuple<TParamId, Func<bool, bool>>> boolChecks =
-			new List<Tuple<TParamId, Func<bool, bool>>>();
-		private List<Tuple<TParamId, Func<float, bool>>> floatChecks =
-			new List<Tuple<TParamId, Func<float, bool>>>();
-		private List<Tuple<TParamId, Func<int, bool>>> intChecks =
-			new List<Tuple<TParamId, Func<int, bool>>>();
-		private List<Tuple<TParamId, Func<string, bool>>> stringChecks =
-			new List<Tuple<TParamId, Func<string, bool>>>();
+		private List<Tuple<TParamId, Func<bool, bool>>> boolChecks = new List<Tuple<TParamId, Func<bool, bool>>>();
+		private List<Tuple<TParamId, Func<float, bool>>> floatChecks = new List<Tuple<TParamId, Func<float, bool>>>();
+		private List<Tuple<TParamId, Func<int, bool>>> intChecks = new List<Tuple<TParamId, Func<int, bool>>>();
+		private List<Tuple<TParamId, Func<string, bool>>> stringChecks = new List<Tuple<TParamId, Func<string, bool>>>();
 		private HashSet<TParamId> triggerChecks = new HashSet<TParamId>();
 		private List<Func<bool>> observableChecks = new List<Func<bool>>();
 
@@ -65,7 +61,7 @@ namespace Stateful {
 			triggerChecks.Add(param);
 		}
 
-		internal void AddObservableCheck(IObservable observable, Func<bool> check) {
+		internal void AddObservableCheck(INotifyChanged observable, Func<bool> check) {
 			paramHashCodes.Add(observable.GetHashCode());
 			observableChecks.Add(check);
 		}
@@ -78,36 +74,23 @@ namespace Stateful {
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId state;
-
 		internal GoToTransition(TStateId state) => this.state = state;
-
-		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			stateMachine.GoTo(state);
-
-		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
-			new GoToTransition<TStateId, TParamId, TMessageId>(state);
+		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => stateMachine.GoTo(state);
+		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() => new GoToTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
 	internal partial class PushTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
 		internal TStateId state;
-
 		internal PushTransition(TStateId state) => this.state = state;
-
-		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			stateMachine.Push(state);
-
-		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
-			new PushTransition<TStateId, TParamId, TMessageId>(state);
+		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => stateMachine.Push(state);
+		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() => new PushTransition<TStateId, TParamId, TMessageId>(state);
 	}
 
 	internal partial class PopTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			stateMachine.Pop();
-
-		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() =>
-			new PopTransition<TStateId, TParamId, TMessageId>();
+		internal override void DoTransition(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => stateMachine.Pop();
+		internal override Transition<TStateId, TParamId, TMessageId> GetCloneWithoutChecks() => new PopTransition<TStateId, TParamId, TMessageId>();
 	}
 
 	#endregion

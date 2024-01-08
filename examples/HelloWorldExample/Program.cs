@@ -11,10 +11,10 @@ namespace HelloWorldExample {
 			// Build a state machine with two states: "Hello, world!" and "Goodbye, world!"
 			// Toggle between these two states when the trigger "Toggle state" gets set.
 			// Don't worry, you can use whatever data type you'd like for the state and param ids.
-			StateMachine stateMachine = StateMachineBuilder.Create().
+			var stateMachine = StateMachineBuilder.Create().
 				AddState("Hello, world!").GoTo("Goodbye, world!").WhenTrigger("Toggle state").
 				AddState("Goodbye, world!").GoTo("Hello, world!").WhenTrigger("Toggle state").
-				Build().As<StateMachine>();
+				Build();
 
 			// Enable logging so you can see what goes on inside the state machine
 			stateMachine.LogFlow = true;

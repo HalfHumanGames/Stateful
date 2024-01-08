@@ -1,5 +1,4 @@
 #if TASKS
-
 #if NETSTANDARD1_0
 using Stateful.Utilities;
 #endif
@@ -13,22 +12,9 @@ namespace Stateful {
 
 		#region Delegate definitions
 
-		public delegate Task OnTransitionAsyncHandler(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
-			State<TStateId, TParamId, TMessageId> state
-		);
-
-		public delegate Task OnMessageAsyncHandler(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
-			State<TStateId, TParamId, TMessageId> state, 
-			object arg
-		);
-
-		public delegate Task<T> OnMessageAsyncHandler<T>(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, 
-			State<TStateId, TParamId, TMessageId> state, 
-			object arg
-		);
+		public delegate Task OnTransitionAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state);
+		public delegate Task OnMessageAsyncHandler(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg);
+		public delegate Task<T> OnMessageAsyncHandler<T>(StateMachine<TStateId, TParamId, TMessageId> stateMachine, State<TStateId, TParamId, TMessageId> state, object arg);
 
 		#endregion
 
@@ -50,9 +36,7 @@ namespace Stateful {
 			await base.ExitAsync(stateMachine);
 		}
 
-		internal override async Task SendMessageAsync(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
-		) {
+		internal override async Task SendMessageAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
 			await base.SendMessageAsync(stateMachine, message, arg);
 			await SendMessageAsync(message, arg);
 		}
@@ -61,10 +45,6 @@ namespace Stateful {
 
 		#region Flow control
 
-		/// <summary>
-		/// Stops the state machine using the state with the specified state id
-		/// </summary>
-		/// <param name="state">The state id of the state to start at</param>
 		public async Task StartAsync(TStateId state) {
 			if (IsRunning) {
 				throw new InvalidOperationException("State machine is already running.");
@@ -78,14 +58,8 @@ namespace Stateful {
 			await GoToAsync(state);
 		}
 
-		/// <summary>
-		/// Starts the state machine using the first state added during configuration
-		/// </summary>
 		public async Task StartAsync() => await StartAsync(initialStateId);
 
-		/// <summary>
-		/// Stops the state machine
-		/// </summary>
 		public async Task StopAsync() {
 			if (!IsRunning) {
 				throw new InvalidOperationException("State machine is not running.");
@@ -99,10 +73,6 @@ namespace Stateful {
 			Reconfigure();
 		}
 
-		/// <summary>
-		/// Transitions to the specified state irregardless of transitions and transition conditions
-		/// </summary>
-		/// <param name="state">The state id of the state to transition to</param>
 		public async Task GoToAsync(TStateId state) {
 			Log($"Going to state {state}.");
 			if (!states.ContainsKey(state)) {
@@ -130,20 +100,14 @@ namespace Stateful {
 				}
 				throw new ArgumentException($"State {state} not found.");
 			}
-			transitionLock.AddLock();
 			if (activeStates.Count > 0) {
 				await states[activeStates.Pop()].ExitAsync(this);
 			}
 			activeStates.Push(state);
 			await states[state].EnterAsync(this);
-			transitionLock.RemoveLock();
 			await EvaluateTransitionsAsync();
 		}
 
-		/// <summary>
-		/// Pushes the specified state onto the active states stack irregardless of transitions and transition conditions
-		/// </summary>
-		/// <param name="state">The state id of the state to push onto the active states stack</param>
 		public async Task PushAsync(TStateId state) {
 			Log($"Pushing state {state}.");
 			if (!states.ContainsKey(state)) {
@@ -171,29 +135,22 @@ namespace Stateful {
 				}
 				throw new ArgumentException($"State {state} not found.");
 			}
-			transitionLock.AddLock();
 			if (activeStates.Count > 0) {
 				await states[activeStates.Peek()].PauseAsync(this);
 			}
 			activeStates.Push(state);
 			await states[activeStates.Peek()].EnterAsync(this);
-			transitionLock.RemoveLock();
 			await EvaluateTransitionsAsync();
 		}
 
-		/// <summary>
-		/// Pops the peek state of the active states stack irregardless of transitions and transition conditions
-		/// </summary>
 		public async Task PopAsync() {
 			Log($"Popping state {ActiveStateId}.");
-			transitionLock.AddLock();
 			if (activeStates.Count > 0) {
 				await states[activeStates.Pop()].ExitAsync(this);
 			}
 			if (activeStates.Count > 0) {
 				await states[activeStates.Peek()].ResumeAsync(this);
 			}
-			transitionLock.RemoveLock();
 			await EvaluateTransitionsAsync();
 		}
 
@@ -201,11 +158,6 @@ namespace Stateful {
 
 		#region Set parameters
 
-		/// <summary>
-		/// Sets an bool parameter value
-		/// </summary>
-		/// <param name="param">Parameter id</param>
-		/// <param name="value">Value</param>
 		public async Task SetBoolAsync(TParamId param, bool value) {
 			if (!IsRunning) {
 				throw new InvalidOperationException("Cannot set param when the state machine is not running.");
@@ -219,11 +171,6 @@ namespace Stateful {
 			await EvaluateTransitionsAsync(param.GetHashCode());
 		}
 
-		/// <summary>
-		/// Sets an float parameter value
-		/// </summary>
-		/// <param name="param">Parameter id</param>
-		/// <param name="value">Value</param>
 		public async Task SetFloatAsync(TParamId param, float value, bool relative = false) {
 			if (!IsRunning) {
 				throw new InvalidOperationException("Cannot set param when the state machine is not running.");
@@ -246,11 +193,6 @@ namespace Stateful {
 			await EvaluateTransitionsAsync(param.GetHashCode());
 		}
 
-		/// <summary>
-		/// Sets an int parameter value
-		/// </summary>
-		/// <param name="param">Parameter id</param>
-		/// <param name="value">Value</param>
 		public async Task SetIntAsync(TParamId param, int value, bool relative = false) {
 			if (!IsRunning) {
 				throw new InvalidOperationException("Cannot set param when the state machine is not running.");
@@ -273,11 +215,6 @@ namespace Stateful {
 			await EvaluateTransitionsAsync(param.GetHashCode());
 		}
 
-		/// <summary>
-		/// Sets a string parameter value
-		/// </summary>
-		/// <param name="param">Parameter id</param>
-		/// <param name="value">Value</param>
 		public async Task SetStringAsync(TParamId param, string value, bool append = false) {
 			if (!IsRunning) {
 				throw new InvalidOperationException("Cannot set param when the state machine is not running.");
@@ -300,10 +237,6 @@ namespace Stateful {
 			await EvaluateTransitionsAsync(param.GetHashCode());
 		}
 
-		/// <summary>
-		/// Sets a trigger parameter
-		/// </summary>
-		/// <param name="param">Parameter id</param>
 		public async Task SetTriggerAsync(TParamId param) {
 			if (!IsRunning) {
 				throw new InvalidOperationException("Cannot set param when the state machine is not running.");
@@ -336,36 +269,17 @@ namespace Stateful {
 			return await ActiveState.SendMessageAsync<T>(this, message, arg);
 		}
 
-		private async Task EvaluateTransitionsAsync(int paramHashCode) {
+		private async Task EvaluateTransitionsAsync(int paramHashCode = 0) {
 			if (ActiveState is StateMachine<TStateId, TParamId, TMessageId> substate) {
 				await substate.EvaluateTransitionsAsync();
 				return;
 			}
-			if (!canEvaluateTransitions) {
-				Log($"Cannot transition: " + (
-					!IsRunning ? "State machine is not running." :
-					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
-				));
+			if (!CanEvaluateTransitions(out string reason)) {
+				Log($"Cannot transition: " + reason);
 				return;
 			}
-			Log($"Evaluating transitions.");
-			if (activeTransitions.Any(x => x.HasParam(paramHashCode))) {
+			if (paramHashCode != 0 && !activeTransitions.Any(x => x.HasParam(paramHashCode))) {
 				Log("The active state does not take this param into consideration. No need to evaluate transitions.");
-				return;
-			}
-			await EvaluateTransitionsAsync();
-		}
-
-		private async Task EvaluateTransitionsAsync() {
-			if (ActiveState is StateMachine<TStateId, TParamId, TMessageId> substate) {
-				await substate.EvaluateTransitionsAsync();
-				return;
-			}
-			if (!canEvaluateTransitions) {
-				Log($"Cannot transition: " + (
-					!IsRunning ? "State machine is not running." :
-					transitionLock.IsLocked ? "Transitions are locked." : "No active states."
-				));
 				return;
 			}
 			Log($"Evaluating transitions.");
@@ -373,7 +287,9 @@ namespace Stateful {
 				bool success = transition.EvaluateTransition(this);
 				if (success) {
 					Log("Valid transition found.");
+					isTransitioning = true;
 					await transition.DoTransitionAsync(this);
+					isTransitioning = false;
 					return;
 				}
 			}
@@ -383,5 +299,4 @@ namespace Stateful {
 		#endregion
 	}
 }
-
 #endif

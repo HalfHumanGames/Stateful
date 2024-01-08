@@ -6,7 +6,7 @@ namespace AIExample {
 	public class Game {
 
 		private const int aggroDistance = 4;
-		private const int leashDistance = 8;
+		private const int leashDistance = 10;
 		private const int levelSize = 10;
 		private static readonly (int, int)[] pathDefinition = 
 			new (int x, int y)[] {
@@ -34,6 +34,7 @@ namespace AIExample {
 				aggroDistance,
 				leashDistance
 			);
+			//ai.LogFlow = true;
 			ai.Start();
 		}
 
@@ -44,7 +45,7 @@ namespace AIExample {
 			}
 			
 			// title and controls
-			string gui = "\n__________STAY ALIVE!_________\n\n        WASD to move.\n\n";
+			string gui = "\n__________STAY ALIVE!_________\n\n         WASD to move.\n\n";
 
 			// level and entities
 			for (int y = levelSize - 1; y >= 0; y--) {
@@ -55,7 +56,10 @@ namespace AIExample {
 			}
 
 			// Display AI state
-			gui += $"\n    Monster state: {ai.ActiveStateId}\n";
+			gui += $"\n     Monster state: {ai.ActiveStateId}\n";
+
+			gui += $"\n     Aggro distance: {aggroDistance}";
+			gui += $"\n     Leash distance: {leashDistance}\n";
 
 			// q to quit
 			gui += "\n     Press (q) to quit.";

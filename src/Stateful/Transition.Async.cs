@@ -11,20 +11,17 @@ namespace Stateful {
 
 	internal partial class GoToTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			await stateMachine.GoToAsync(state);
+		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => await stateMachine.GoToAsync(state);
 	}
 
 	internal partial class PushTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			await stateMachine.PushAsync(state);
+		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => await stateMachine.PushAsync(state);
 	}
 
 	internal partial class PopTransition<TStateId, TParamId, TMessageId> : Transition<TStateId, TParamId, TMessageId> {
 
-		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) =>
-			await stateMachine.PopAsync();
+		internal override async Task DoTransitionAsync(StateMachine<TStateId, TParamId, TMessageId> stateMachine) => await stateMachine.PopAsync();
 	}
 }
 

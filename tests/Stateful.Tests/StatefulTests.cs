@@ -40,8 +40,7 @@ namespace Stateful.Tests {
 
 	public class StatefulTests {
 
-		private IAddStateAddSetParam<StateId, ParamId, MessageId> builder =>
-			StateMachineBuilder.Create<StateId, ParamId, MessageId>();
+		private IAddStateAddSetParam<StateId, ParamId, MessageId> builder => StateMachineBuilder.Create<StateId, ParamId, MessageId>();
 
 		[Fact]
 		public void IsRunnngWorks() {
@@ -494,7 +493,7 @@ namespace Stateful.Tests {
 
 			stateMachine.Stop();
 
-			Assert.False(stateMachine.GetBool(ParamId.BoolA));
+			Assert.True(stateMachine.GetBool(ParamId.BoolA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetBool(ParamId.BoolB, true));
 		}
 
@@ -533,7 +532,7 @@ namespace Stateful.Tests {
 
 			stateMachine.Stop();
 
-			Assert.Equal(0, stateMachine.GetFloat(ParamId.FloatA));
+			Assert.Equal(-4.99f, stateMachine.GetFloat(ParamId.FloatA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetFloat(ParamId.FloatB, 2.75f));
 		}
 
@@ -573,7 +572,7 @@ namespace Stateful.Tests {
 
 			stateMachine.Stop();
 
-			Assert.Equal(0, stateMachine.GetInt(ParamId.IntA));
+			Assert.Equal(-5, stateMachine.GetInt(ParamId.IntA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetInt(ParamId.IntB, 3));
 		}
 
@@ -613,7 +612,7 @@ namespace Stateful.Tests {
 
 			stateMachine.Stop();
 
-			Assert.Null(stateMachine.GetString(ParamId.StringA));
+			Assert.Equal("Goo", stateMachine.GetString(ParamId.StringA));
 			Assert.Throws<InvalidOperationException>(() => stateMachine.SetString(ParamId.StringB, "Tiki"));
 		}
 

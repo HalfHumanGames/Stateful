@@ -3,6 +3,25 @@ using System;
 
 namespace ArcadeExample {
 
+	// Game screens
+	public enum StateId {
+		GameScreen,
+		LoseScreen,
+		PauseMenu,
+		StartScreen,
+		WinScreen
+	}
+
+	// Parameters used to control the state machine flow
+	public enum ParamId {
+		CoinsInserted,
+		Continue,
+		Hearts,
+		IsPaused,
+		ZombiesKilled,
+		ExitToStartScreen
+	}
+
 	// This is our root state machine class that includes the configuration and
 	// a couple of methods used by main to handle drawing states and handling input.
 	public class Arcade : StateMachine<StateId, ParamId> {
@@ -11,12 +30,11 @@ namespace ArcadeExample {
 		public const int NumZombies = 3;
 		public const int StartingHearts = 3;
 
-		public Arcade() => Configure(
-
+		protected override IAddHandlerAddTransitionAddStateBuild<StateId, ParamId, string> GetConfiguration() { 
 			// For simple state machines you can configure the entire state machine
 			// within the constructor of the root state machine. For more complex
 			// state machines, each substate machine can configure itself.
-			Builder.
+			return Builder.
 				SetInt(ParamId.CoinsInserted, 2).
 				AddState(StateId.StartScreen, new StartScreen()).
 					GoTo(StateId.GameScreen).
@@ -29,18 +47,16 @@ namespace ArcadeExample {
 					Push(StateId.PauseMenu).
 						WhenBool(ParamId.IsPaused, x => x).
 				AddState(StateId.WinScreen, new WinScreen()).
-					GoTo(StateId.StartScreen).
-						WhenTrigger(ParamId.Continue).
 				AddState(StateId.LoseScreen, new LoseScreen()).
+				From(StateId.WinScreen, StateId.LoseScreen).
 					GoTo(StateId.StartScreen).
 						WhenTrigger(ParamId.Continue).
 				AddState(StateId.PauseMenu, new PauseMenu()).
 					Pop.
 						WhenBool(ParamId.IsPaused, x => !x).
 					GoTo(StateId.StartScreen).
-						WhenTrigger(ParamId.ExitToStartScreen)
-			// Building and casting (As) are optional for the root state machine
-		);
+						WhenTrigger(ParamId.ExitToStartScreen);
+		}
 
 		// Used in main to draw the active state
 		public void Draw() => (ActiveState as ArcadeScreen).Draw(this);

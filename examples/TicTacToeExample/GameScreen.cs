@@ -46,7 +46,7 @@ namespace TicTacToeExample {
 
 			// If the game is in progress, check for game over conditions
 			// We do not have to reference the parent state machine since
-			// state machines and substate machiens share paremeters
+			// state machines and substate machines share paremeters
 			if (GetInt(ParamId.GameStatus) == (int) GameStatus.InProgress) {
 				SetInt(ParamId.GameStatus, (int) GetGameStatus(Board));
 			}

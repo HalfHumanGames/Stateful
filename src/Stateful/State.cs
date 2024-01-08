@@ -17,6 +17,7 @@ namespace Stateful {
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onExit;
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onPause;
 		private StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler onResume;
+
 		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler> onMessages =
 			new Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler>();
 		private Dictionary<TMessageId, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<object>> onMessagesWithReturnValue =
@@ -46,22 +47,18 @@ namespace Stateful {
 			OnResume(stateMachine);
 		}
 
-		internal virtual void SendMessage(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
-		) { 
-			if (!onMessages.ContainsKey(message)) { 
+		internal virtual void SendMessage(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+			if (!onMessages.ContainsKey(message)) {
 				throw new ArgumentException($"No message with the id {message} found.");
 			}
 			onMessages[message].Invoke(stateMachine, this, arg);
 		}
 
-		internal virtual T SendMessage<T>(
-			StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg
-		) { 
-			if (!onMessagesWithReturnValue.ContainsKey(message)) { 
+		internal virtual T SendMessage<T>(StateMachine<TStateId, TParamId, TMessageId> stateMachine, TMessageId message, object arg) {
+			if (!onMessagesWithReturnValue.ContainsKey(message)) {
 				throw new ArgumentException($"No message with the id {message} found.");
-			} 
-			object retval = onMessagesWithReturnValue[message](stateMachine, this, arg); 
+			}
+			object retval = onMessagesWithReturnValue[message](stateMachine, this, arg);
 			if (!(retval is T)) {
 				throw new ArgumentException($"Return value is not of type {typeof(T)}");
 			}
@@ -72,46 +69,32 @@ namespace Stateful {
 
 		#region Internal on transition or message setters used by state machine builder
 
-		internal State<TStateId, TParamId, TMessageId> OnEnter(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> OnEnter(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler) {
 			onEnter = handler;
 			return this;
 		}
 
-		internal State<TStateId, TParamId, TMessageId> OnExit(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> OnExit(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler) {
 			onExit = handler;
 			return this;
 		}
 
-		internal State<TStateId, TParamId, TMessageId> OnPause(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> OnPause(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler) {
 			onPause = handler;
 			return this;
 		}
 
-		internal State<TStateId, TParamId, TMessageId> OnResume(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> OnResume(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler handler) {
 			onResume = handler;
 			return this;
 		}
 
-		internal State<TStateId, TParamId, TMessageId> On(
-			TMessageId message,
-			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> On(TMessageId message, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler handler) {
 			onMessages[message] = handler;
 			return this;
 		}
 
-		internal State<TStateId, TParamId, TMessageId> On<T>(
-			TMessageId message,
-			StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> handler
-		) {
+		internal State<TStateId, TParamId, TMessageId> On<T>(TMessageId message, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> handler) {
 			onMessagesWithReturnValue[message] = (machine, state, data) => handler(machine, state, data);
 			return this;
 		}
@@ -120,28 +103,9 @@ namespace Stateful {
 
 		#region Protected on transition methods available for override
 
-		/// <summary>
-		/// OnEnter is called when entering this state
-		/// </summary>
-		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual void OnEnter(StateMachine<TStateId, TParamId, TMessageId> stateMachine) { }
-
-		/// <summary>
-		/// OnExit is called when exiting this state
-		/// </summary>
-		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual void OnExit(StateMachine<TStateId, TParamId, TMessageId> stateMachine) { }
-
-		/// <summary>
-		/// OnPause is called when pausing this state
-		/// </summary>
-		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual void OnPause(StateMachine<TStateId, TParamId, TMessageId> stateMachine) { }
-
-		/// <summary>
-		/// OnResume is called when resuming this state
-		/// </summary>
-		/// <param name="stateMachine">The state machine this state belongs to</param>
 		protected virtual void OnResume(StateMachine<TStateId, TParamId, TMessageId> stateMachine) { }
 
 		#endregion

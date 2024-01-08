@@ -10,48 +10,15 @@ namespace Stateful {
 
 		#region Create methods
 
-		/// <summary>
-		/// Creates a new state machine builder with string ids for both states and params
-		/// </summary>
-		/// <returns></returns>
-		public static IAddStateAddSetParam<string, string, string> Create() {
-			return new StateMachineBuilder();
-		}
-
-		/// <summary>
-		/// Creates a new state machine builder with string ids for states and a generic id for params
-		/// </summary>
-		/// <typeparam name="TStateId">The type used to identify states</typeparam>
-		/// <returns></returns>
-		public static IAddStateAddSetParam<TStateId, string, string> Create<TStateId>() {
-			return new StateMachineBuilder<TStateId, string, string>();
-		}
-
-		/// <summary>
-		/// Creates a new state machine builder with generic ids for both states and params
-		/// </summary>
-		/// <typeparam name="TStateId">The type used to identify states</typeparam>
-		/// <typeparam name="TParamId">The type used to identify params</typeparam>
-		/// <returns></returns>
-		public static IAddStateAddSetParam<TStateId, TParamId, string> Create<TStateId, TParamId>() {
-			return new StateMachineBuilder<TStateId, TParamId, string>();
-		}
-
-		/// <summary>
-		/// Creates a new state machine builder with generic ids for both states and params
-		/// </summary>
-		/// <typeparam name="TStateId">The type used to identify states</typeparam>
-		/// <typeparam name="TParamId">The type used to identify params</typeparam>
-		/// <returns></returns>
-		public static IAddStateAddSetParam<TStateId, TParamId, TMessageId> Create<TStateId, TParamId, TMessageId>() {
-			return new StateMachineBuilder<TStateId, TParamId, TMessageId>();
-		}
+		public static IAddStateAddSetParam<string, string, string> Create() => new StateMachineBuilder();
+		public static IAddStateAddSetParam<TStateId, string, string> Create<TStateId>() => new StateMachineBuilder<TStateId, string, string>();
+		public static IAddStateAddSetParam<TStateId, TParamId, string> Create<TStateId, TParamId>() => new StateMachineBuilder<TStateId, TParamId, string>();
+		public static IAddStateAddSetParam<TStateId, TParamId, TMessageId> Create<TStateId, TParamId, TMessageId>() => new StateMachineBuilder<TStateId, TParamId, TMessageId>();
 
 		#endregion
 	}
 
-	public partial class StateMachineBuilder<TStateId, TParamId, TMessageId> :
-		IStateMachineBuilder<TStateId, TParamId, TMessageId> {
+	public partial class StateMachineBuilder<TStateId, TParamId, TMessageId> : IStateMachineBuilder<TStateId, TParamId, TMessageId> {
 
 		private TStateId[] statesToAddTransitionsTo;
 		private Transition<TStateId, TParamId, TMessageId> mostRecentlyAddedTransition;
@@ -93,20 +60,14 @@ namespace Stateful {
 			return AddState(name, new State<TStateId, TParamId, TMessageId>());
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
-			TStateId name, State<TStateId, TParamId, TMessageId> state
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(TStateId name, State<TStateId, TParamId, TMessageId> state) {
 			statesToAddTransitionsTo = new TStateId[] { name };
 			stateMachine.AddState(name, state);
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(
-			TStateId name, IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> builder
-		) {
-			statesToAddTransitionsTo = new TStateId[] { name };
-			stateMachine.AddState(name, builder.Build());
-			return this;
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> AddState(TStateId name, IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> builder) {
+			return AddState(name, builder.Build());
 		}
 
 		public IAddTransitionAddExcept<TStateId, TParamId, TMessageId> FromAny {
@@ -135,26 +96,17 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
-			TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).On(id, (stateMachine, state, arg) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
-			TMessageId id,
-			Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action
-		) {
-			stateMachine.GetState(statesToAddTransitionsTo[0]).On(id, (stateMachine, state, arg) =>
-				action(stateMachine, state)
-			);
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, Action<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>> action) {
+			stateMachine.GetState(statesToAddTransitionsTo[0]).On(id, (stateMachine, state, arg) => action(stateMachine, state));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(
-			TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On(TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).On(id, action);
 			return this;
 		}
@@ -164,26 +116,17 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
-			TMessageId id, Func<StateMachine<TStateId, TParamId, TMessageId>, T> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(TMessageId id, Func<StateMachine<TStateId, TParamId, TMessageId>, T> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).On<T>(id, (stateMachine, state, arg) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
-			TMessageId id,
-			Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, T> action
-		) {
-			stateMachine.GetState(statesToAddTransitionsTo[0]).On<T>(id, (stateMachine, state, arg) =>
-				action(stateMachine, state)
-			);
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(TMessageId id, Func<StateMachine<TStateId, TParamId, TMessageId>, State<TStateId, TParamId, TMessageId>, T> action) {
+			stateMachine.GetState(statesToAddTransitionsTo[0]).On<T>(id, (stateMachine, state, arg) => action(stateMachine, state));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(
-			TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> On<T>(TMessageId id, StateMachine<TStateId, TParamId, TMessageId>.OnMessageHandler<T> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).On<T>(id, action);
 			return this;
 		}
@@ -193,16 +136,12 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(
-			Action<StateMachine<TStateId, TParamId, TMessageId>> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(Action<StateMachine<TStateId, TParamId, TMessageId>> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnEnter((stateMachine, state) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnEnter(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnEnter(action);
 			return this;
 		}
@@ -212,16 +151,12 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(
-			Action<StateMachine<TStateId, TParamId, TMessageId>> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(Action<StateMachine<TStateId, TParamId, TMessageId>> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnExit((stateMachine, state) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnExit(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnExit(action);
 			return this;
 		}
@@ -231,16 +166,12 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(
-			Action<StateMachine<TStateId, TParamId, TMessageId>> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(Action<StateMachine<TStateId, TParamId, TMessageId>> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnPause((stateMachine, state) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnPause(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnPause(action);
 			return this;
 		}
@@ -250,16 +181,12 @@ namespace Stateful {
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(
-			Action<StateMachine<TStateId, TParamId, TMessageId>> action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(Action<StateMachine<TStateId, TParamId, TMessageId>> action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnResume((stateMachine, state) => action(stateMachine));
 			return this;
 		}
 
-		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(
-			StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action
-		) {
+		public IAddHandlerAddTransitionAddStateBuild<TStateId, TParamId, TMessageId> OnResume(StateMachine<TStateId, TParamId, TMessageId>.OnTransitionHandler action) {
 			stateMachine.GetState(statesToAddTransitionsTo[0]).OnResume(action);
 			return this;
 		}
@@ -296,46 +223,34 @@ namespace Stateful {
 
 		#region Add transition conditions
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenBool(
-			TParamId param, Func<bool, bool> check
-		) {
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenBool(TParamId param, Func<bool, bool> check) {
 			mostRecentlyAddedTransition.AddBoolCheck(param, check);
 			return this;
 		}
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenFloat(
-			TParamId param, Func<float, bool> check
-		) {
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenFloat(TParamId param, Func<float, bool> check) {
 			mostRecentlyAddedTransition.AddFloatCheck(param, check);
 			return this;
 		}
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenInt(
-			TParamId param, Func<int, bool> check
-		) {
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenInt(TParamId param, Func<int, bool> check) {
 			mostRecentlyAddedTransition.AddIntCheck(param, check);
 			return this;
 		}
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenString(
-			TParamId param, Func<string, bool> check
-		) {
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenString(TParamId param, Func<string, bool> check) {
 			mostRecentlyAddedTransition.AddStringCheck(param, check);
 			return this;
 		}
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenTrigger(
-			TParamId param
-		) {
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> WhenTrigger(TParamId param) {
 			mostRecentlyAddedTransition.AddTriggerCheck(param);
 			return this;
 		}
 
-		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> When<T>(
-			Observable<T> observable, Func<T, bool> check
-		) {
-			stateMachine.AddObservable(observable, check);
-			mostRecentlyAddedTransition.AddObservableCheck(observable, () => check(observable.Value));
+		public IAddConditionAddHandlerAddTransitionAddStateBuildAddOr<TStateId, TParamId, TMessageId> When<T>(Observable<T> observable, Func<T, bool> check) {
+			stateMachine.AddObservable((INotifyChanged) observable, check);
+			mostRecentlyAddedTransition.AddObservableCheck((INotifyChanged) observable, () => check(observable.Value));
 			return this;
 		}
 
@@ -348,15 +263,11 @@ namespace Stateful {
 
 		#endregion
 
-		private StateMachine<TStateId, TParamId, TMessageId> stateMachine = 
-			new StateMachine<TStateId, TParamId, TMessageId>();
+		private StateMachine<TStateId, TParamId, TMessageId> stateMachine = new StateMachine<TStateId, TParamId, TMessageId>();
 
-		public StateMachine<TStateId, TParamId, TMessageId> Build() {
-			return stateMachine;
-		}
+		public StateMachine<TStateId, TParamId, TMessageId> Build() => stateMachine;
 
-		public TStateMachine Build<TStateMachine>() 
-			where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
+		public TStateMachine Build<TStateMachine>() where TStateMachine : StateMachine<TStateId, TParamId, TMessageId>, new() {
 			return Build().As<TStateMachine>();
 		}
 	}
